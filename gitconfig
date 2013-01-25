@@ -1,0 +1,9 @@
+[user]
+	name = Zsolt Szilagyi
+	email = esgott@gmail.com
+[alias]
+	st = status
+	co = checkout
+	br = branch
+[color]
+	ui = auto
