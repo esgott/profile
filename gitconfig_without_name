@@ -1,0 +1,8 @@
+[alias]
+	st = status
+	co = checkout
+	br = branch
+[color]
+	ui = auto
+[push]
+	default = upstream
