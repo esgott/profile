@@ -1,14 +1,39 @@
-#
-# ~/.bashrc
-#
+# ANSI color codes
+RS="\[\033[0m\]"    # reset
+HC="\[\033[1m\]"    # hicolor
+UL="\[\033[4m\]"    # underline
+INV="\[\033[7m\]"   # inverse background and foreground
+FBLK="\[\033[30m\]" # foreground black
+FRED="\[\033[31m\]" # foreground red
+FGRN="\[\033[32m\]" # foreground green
+FYEL="\[\033[33m\]" # foreground yellow
+FBLE="\[\033[34m\]" # foreground blue
+FMAG="\[\033[35m\]" # foreground magenta
+FCYN="\[\033[36m\]" # foreground cyan
+FWHT="\[\033[37m\]" # foreground white
+BBLK="\[\033[40m\]" # background black
+BRED="\[\033[41m\]" # background red
+BGRN="\[\033[42m\]" # background green
+BYEL="\[\033[43m\]" # background yellow
+BBLE="\[\033[44m\]" # background blue
+BMAG="\[\033[45m\]" # background magenta
+BCYN="\[\033[46m\]" # background cyan
+BWHT="\[\033[47m\]" # background white
 
-# If not running interactively, don't do anything
-[[ $- != *i* ]] && return
+alias getTime='date +"[%k:%M"]'
 
-#Prompt
-PS1='[\u@\h \W]\$ '
+# Function to assemble the Git parsingart of our prompt.
+git_prompt ()
+{
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    return 0
+  fi
 
-#Aliases
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
+  git_branch=$(git branch 2>/dev/null | sed -n '/^\*/s/^\* //p')
+
+  echo "($git_branch)"
+}
+
+PROMPT_COMMAND='PS1="$HC$FGRN\u@\h $FBLE\w $FRED$(git_prompt) $FWHT`getTime`\n \$ $RS"'
+
+export PATH=$HOME/bin:$PATH
