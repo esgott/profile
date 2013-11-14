@@ -1,0 +1,2065 @@
+! Preferences file for NEdit
+!
+! This file is overwritten by the "Save Defaults..." command in NEdit
+! and serves only the interactively settable options presented in the NEdit
+! "Preferences" menu.  To modify other options, such as key bindings, use
+! the .Xdefaults file in your home directory (or the X resource
+! specification method appropriate to your system).  The contents of this
+! file can be moved into an X resource file, but since resources in this file
+! override their corresponding X resources, either this file should be
+! deleted or individual resource lines in the file should be deleted for the
+! moved lines to take effect.
+
+nedit.fileVersion: 5.5
+nedit.shellCommands: \
+	spell:Alt+B:s:ED:\n\
+		(cat;echo "") | spell\n\
+	wc::w:ED:\n\
+		wc | awk '{print $1 " lines, " $2 " words, " $3 " characters"}'\n\
+	sort::o:EX:\n\
+		sort\n\
+	number lines::n:AW:\n\
+		nl -ba\n\
+	make:Alt+Z:m:W:\n\
+		make\n\
+	expand::p:EX:\n\
+		expand\n\
+	unexpand::u:EX:\n\
+		unexpand\n\
+	ClearCase...>checkout:Ctrl+K:c:DL:\n\
+		cleartool co -nc %\n\
+	ClearCase...>checkin:Shift+Ctrl+K:k:DXSL:\n\
+		cleartool  ci -nc %\n\
+	ClearCase...>uncheckout::u:DS:\n\
+		cleartool unco % \n\
+	ClearCase...>xclearcase:::D:\n\
+		sh -c "xclearcase > /dev/null 2>&1 &" >& /dev/null &\n\
+	ClearCase...>version tree::v:D:\n\
+		xclearcase -vtree %  >& &/dev/null &\n\
+	check syntax:Shift+Ctrl+X:x:WS:\n\
+		ttcn3_compiler -p -n % &\n\
+	check semantic (all):Shift+Ctrl+S:s:WS:\n\
+		make check &\n
+nedit.macroCommands: \
+	Complete Word:Alt+D::: {\n\
+		# Tuning parameters\n\
+		ScanDistance = 200\n\
+		\n\
+		# Search back to a word boundary to find the word to complete\n\
+		startScan = max(0, $cursor - ScanDistance)\n\
+		endScan = min($text_length, $cursor + ScanDistance)\n\
+		scanString = get_range(startScan, endScan)\n\
+		keyEnd = $cursor-startScan\n\
+		keyStart = search_string(scanString, "<", keyEnd, "backward", "regex")\n\
+		if (keyStart == -1)\n\
+		    return\n\
+		keyString = "<" substring(scanString, keyStart, keyEnd)\n\
+		\n\
+		# search both forward and backward from the cursor position.  Note that\n\
+		# using a regex search can lead to incorrect results if any of the special\n\
+		# regex characters is encountered, which is not considered a delimiter\n\
+		backwardSearchResult = search_string(scanString, keyString, keyStart-1, \\\n\
+		    	"backward", "regex")\n\
+		forwardSearchResult = search_string(scanString, keyString, keyEnd, "regex")\n\
+		if (backwardSearchResult == -1 && forwardSearchResult == -1) {\n\
+		    beep()\n\
+		    return\n\
+		}\n\
+		\n\
+		# if only one direction matched, use that, otherwise use the nearest\n\
+		if (backwardSearchResult == -1)\n\
+		    matchStart = forwardSearchResult\n\
+		else if (forwardSearchResult == -1)\n\
+		    matchStart = backwardSearchResult\n\
+		else {\n\
+		    if (keyStart - backwardSearchResult <= forwardSearchResult - keyEnd)\n\
+		    	matchStart = backwardSearchResult\n\
+		    else\n\
+		    	matchStart = forwardSearchResult\n\
+		}\n\
+		\n\
+		# find the complete word\n\
+		matchEnd = search_string(scanString, ">", matchStart, "regex")\n\
+		completedWord = substring(scanString, matchStart, matchEnd)\n\
+		\n\
+		# replace it in the window\n\
+		replace_range(startScan + keyStart, $cursor, completedWord)\n\
+	}\n\
+	Fill Sel. w/Char:::R: {\n\
+		if ($selection_start == -1) {\n\
+		    beep()\n\
+		    return\n\
+		}\n\
+		\n\
+		# Ask the user what character to fill with\n\
+		fillChar = string_dialog("Fill selection with what character?", "OK", "Cancel")\n\
+		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
+		    return\n\
+		\n\
+		# Count the number of lines in the selection\n\
+		nLines = 0\n\
+		for (i=$selection_start; i<$selection_end; i++)\n\
+		    if (get_character(i) == "\\n")\n\
+		    	nLines++\n\
+		\n\
+		# Create the fill text\n\
+		rectangular = $selection_left != -1\n\
+		line = ""\n\
+		fillText = ""\n\
+		if (rectangular) {\n\
+		    for (i=0; i<$selection_right-$selection_left; i++)\n\
+			line = line fillChar\n\
+		    for (i=0; i<nLines; i++)\n\
+			fillText = fillText line "\\n"\n\
+		    fillText = fillText line\n\
+		} else {\n\
+		    if (nLines == 0) {\n\
+		    	for (i=$selection_start; i<$selection_end; i++)\n\
+		    	    fillText = fillText fillChar\n\
+		    } else {\n\
+		    	startIndent = 0\n\
+		    	for (i=$selection_start-1; i>=0 && get_character(i)!="\\n"; i--)\n\
+		    	    startIndent++\n\
+		    	for (i=0; i<$wrap_margin-startIndent; i++)\n\
+		    	    fillText = fillText fillChar\n\
+		    	fillText = fillText "\\n"\n\
+			for (i=0; i<$wrap_margin; i++)\n\
+			    line = line fillChar\n\
+			for (i=0; i<nLines-1; i++)\n\
+			    fillText = fillText line "\\n"\n\
+			for (i=$selection_end-1; i>=$selection_start && get_character(i)!="\\n"; \\\n\
+			    	i--)\n\
+			    fillText = fillText fillChar\n\
+		    }\n\
+		}\n\
+		\n\
+		# Replace the selection with the fill text\n\
+		replace_selection(fillText)\n\
+	}\n\
+	Quote Mail Reply:::: {\n\
+		if ($selection_start == -1)\n\
+		    replace_all("^.*$", "\\\\> &", "regex")\n\
+		else\n\
+		    replace_in_selection("^.*$", "\\\\> &", "regex")\n\
+	}\n\
+	Unquote Mail Reply:::: {\n\
+		if ($selection_start == -1)\n\
+		    replace_all("(^\\\\> )(.*)$", "\\\\2", "regex")\n\
+		else\n\
+		    replace_in_selection("(^\\\\> )(.*)$", "\\\\2", "regex")\n\
+	}\n\
+	C Comments>Comment Out Sel.@C@C++:::R: {\n\
+		selStart = $selection_start\n\
+		selEnd = $selection_end\n\
+		replace_range(selStart, selEnd, "/* " get_selection() " */")\n\
+		select(selStart, selEnd + 6)\n\
+	}\n\
+	C Comments>C Uncomment Sel.@C@C++:::R: {\n\
+		sel = get_selection()\n\
+		selStart = $selection_start\n\
+		selEnd = $selection_end\n\
+		commentStart = search_string(sel, "/*", 0)\n\
+		if (substring(sel, commentStart+2, commentStart+3) == " ")\n\
+		    keepStart = commentStart + 3\n\
+		else\n\
+		    keepStart = commentStart + 2\n\
+		keepEnd = search_string(sel, "*/", length(sel), "backward")\n\
+		commentEnd = keepEnd + 2\n\
+		if (substring(sel, keepEnd - 1, keepEnd) == " ")\n\
+		    keepEnd = keepEnd - 1\n\
+		replace_range(selStart + commentStart, selStart + commentEnd, \\\n\
+			substring(sel, keepStart, keepEnd))\n\
+		select(selStart, selEnd - (keepStart-commentStart) - \\\n\
+			(commentEnd - keepEnd))\n\
+	}\n\
+	C Comments>+ C++ Comment@C++:::R: {\n\
+		replace_in_selection("^.*$", "// &", "regex")\n\
+	}\n\
+	C Comments>- C++ Comment@C++:::R: {\n\
+		replace_in_selection("(^[ \\\\t]*// ?)(.*)$", "\\\\2", "regex")\n\
+	}\n\
+	C Comments>+ C Bar Comment 1@C:::R: {\n\
+		if ($selection_left != -1) {\n\
+		    dialog("Selection must not be rectangular")\n\
+		    return\n\
+		}\n\
+		start = $selection_start\n\
+		end = $selection_end-1\n\
+		origText = get_range($selection_start, $selection_end-1)\n\
+		newText = "/*\\n" replace_in_string(get_range(start, end), \\\n\
+			"^", " * ", "regex") "\\n */\\n"\n\
+		replace_selection(newText)\n\
+		select(start, start + length(newText))\n\
+	}\n\
+	C Comments>- C Bar Comment 1@C:::R: {\n\
+		selStart = $selection_start\n\
+		selEnd = $selection_end\n\
+		newText = get_range(selStart+3, selEnd-4)\n\
+		newText = replace_in_string(newText, "^ \\\\* ", "", "regex")\n\
+		replace_range(selStart, selEnd, newText)\n\
+		select(selStart, selStart + length(newText))\n\
+	}\n\
+	Make C Prototypes@C@C++:::: {\n\
+		if ($selection_start == -1) {\n\
+		    start = 0\n\
+		    end = $text_length\n\
+		} else {\n\
+		    start = $selection_start\n\
+		    end = $selection_end\n\
+		}\n\
+		string = get_range(start, end)\n\
+		nDefs = 0\n\
+		searchPos = 0\n\
+		prototypes = ""\n\
+		staticPrototypes = ""\n\
+		for (;;) {\n\
+		    headerStart = search_string(string, \\\n\
+			    "^[a-zA-Z]([^;#\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*\\\\{", \\\n\
+			    searchPos, "regex")\n\
+		    if (headerStart == -1)\n\
+			break\n\
+		    headerEnd = search_string(string, ")", $search_end,"backward") + 1\n\
+		    prototype = substring(string, headerStart, headerEnd) ";\\n"\n\
+		    if (substring(string, headerStart, headerStart+6) == "static")\n\
+			staticPrototypes = staticPrototypes prototype\n\
+		    else\n\
+		    			prototypes = prototypes prototype\n\
+		    searchPos = headerEnd\n\
+		    nDefs++\n\
+		}\n\
+		if (nDefs == 0) {\n\
+		    dialog("No function declarations found")\n\
+		    return\n\
+		}\n\
+		new()\n\
+		focus_window("last")\n\
+		replace_range(0, 0, prototypes staticPrototypes)\n\
+	}\n\
+	goToPrevTTCNSourceLine:Ctrl+3:P:: {\n\
+		                # Set position to the next line containing source_file:line information\n\
+		                beginning_of_line("absolute")\n\
+		                find( "(<\\\\\\w+\\\\\\.ttcn):([0-9]+)>","regex", "backward" ) \n\
+		                # The same as goToTTCNSourceLine:\n\
+		                startOfLinePos = search("^", $cursor, "regex", "backward")\n\
+		                if (startOfLinePos == -1)\n\
+		                 startOfLinePos = 0\n\
+		                endOfLinePos = search("$", $cursor, "regex")\n\
+		                if (endOfLinePos == -1)\n\
+		                 endOfLinePos = $text_length\n\
+		                line = get_range(startOfLinePos, endOfLinePos) \n\
+		                len = endOfLinePos - startOfLinePos\n\
+		                startOfFileNameAndLineNumber = search_string(line,"<\\\\\\w+\\\\\\.ttcn:([0-9]+)>",len,"regex","backward")\n\
+		                \n\
+		                if ( startOfFileNameAndLineNumber != -1 )\n\
+		                {\n\
+		                  fileNameAndLineNumber = substring(line,startOfFileNameAndLineNumber,$search_end)\n\
+		                  array = split( fileNameAndLineNumber, ":")\n\
+		                  fileName = array[0]\n\
+		                  lineNumber = array [1]\n\
+		                  command = "nc -noask -line " lineNumber " " fileName\n\
+		                  currentFile = $file_name\n\
+		                  shell_command( command,"")\n\
+		                  focus_window( currentFile )\n\
+		                } \n\
+		                else  \n\
+		                  dialog("goToPrevTTCNSourceLine error:\\nFile name and line number tag not found in this line"  , "OK")\n\
+		        }\n\
+	goToTTCNSourceLine:Ctrl+4:T:: {\n\
+		                startOfLinePos = search("^", $cursor, "regex", "backward")\n\
+		                if (startOfLinePos == -1)\n\
+		                 startOfLinePos = 0\n\
+		                endOfLinePos = search("$", $cursor, "regex")\n\
+		                if (endOfLinePos == -1)\n\
+		                 endOfLinePos = $text_length\n\
+		                line = get_range(startOfLinePos, endOfLinePos) \n\
+		                len = endOfLinePos - startOfLinePos\n\
+		                startOfFileNameAndLineNumber = search_string(line,"<(\\\\\\w+\\\\\\.ttcn):([0-9]+)>",len,"regex","backward")\n\
+		                \n\
+		                if ( startOfFileNameAndLineNumber != -1 )\n\
+		                {\n\
+		                  end_of_line("absolute")\n\
+		                  find( "<(\\\\\\w+\\\\\\.ttcn):([0-9]+)>","regex", "backward" ) #just to show\n\
+		                  fileNameAndLineNumber = substring(line,startOfFileNameAndLineNumber,$search_end)\n\
+		                  array = split( fileNameAndLineNumber, ":")\n\
+		                  fileName = array[0]\n\
+		                  lineNumber = array [1]  \n\
+		                  command = "nc -noask -line " lineNumber " " fileName\n\
+		                  currentFile = $file_name\n\
+		                  shell_command( command,"")\n\
+		                  focus_window( currentFile )\n\
+		                } \n\
+		                else  \n\
+		                  dialog("goToTTCNSourceLine error:\\nFile name and line number tag not found in this line"  , "OK")\n\
+		        }\n\
+	goToNextTTCNSourceLine:Ctrl+5:N:: {\n\
+		                # Set position to the next line containing source_file:line information\n\
+		                end_of_line("absolute")\n\
+		                find( "<(\\\\\\w+\\\\\\.ttcn:[0-9]+)>","regex", "forward" ) \n\
+		                \n\
+		                # The same as goToTTCNSourceLine:\n\
+		                startOfLinePos = search("^", $cursor, "regex", "backward")\n\
+		                if (startOfLinePos == -1)\n\
+		                 startOfLinePos = 0\n\
+		                endOfLinePos = search("$", $cursor, "regex")\n\
+		                if (endOfLinePos == -1)\n\
+		                 endOfLinePos = $text_length\n\
+		                line = get_range( startOfLinePos , endOfLinePos)\n\
+		                len = endOfLinePos - startOfLinePos\n\
+		                startOfFileNameAndLineNumber = search_string(line,"<(\\\\\\w+\\\\\\.ttcn):([0-9]+)>",len,"regex","backward")\n\
+		                if ( startOfFileNameAndLineNumber != -1 )\n\
+		                {\n\
+		                  end_of_line("absolute")\n\
+		                  find( "<(\\\\\\w+\\\\\\.ttcn:[0-9]+)>", "regex", "backward" ) \n\
+		                  fileNameAndLineNumber = substring( line,  startOfFileNameAndLineNumber, $search_end)\n\
+		                  array = split( fileNameAndLineNumber, ":")\n\
+		                  fileName = array[0]\n\
+		                  lineNumber = array [1]\n\
+		                  command = "nc -noask -line " lineNumber " " fileName\n\
+		                  currentFile = $file_name\n\
+		                  shell_command( command,"")\n\
+		                  focus_window( currentFile )\n\
+		                } \n\
+		                else  \n\
+		                  dialog("goToNextTTCNSourceLine error:\\nFile name and line number tag not found in this line"  , "OK")\n\
+	}\n\
+	quick update ctags file "tags":::: {\n\
+		ttcn_dir = getenv("TTCN3_DIR") \n\
+		if( ttcn_dir == "") \n\
+		{ \n\
+			dialog("Help on keyword refused:\\nEnvironment variable TTCN3_DIR not set", "OK") \n\
+			return \n\
+		} \n\
+		shell_command( ttcn_dir "/bin/ctags_ttcn3 --line-directives=yes *.ttcn *.asn *.ttcn3 *.asn1 *.3mp","" )\n\
+		load_tags_file( $file_path"/tags")\n\
+	}\n\
+	update ctags file...:Shift+Ctrl+D::: {\n\
+		ttcn_dir = getenv("TTCN3_DIR") \n\
+		if( ttcn_dir == "") \n\
+		{ \n\
+			dialog("Help on keyword refused:\\nEnvironment variable TTCN3_DIR not set", "OK") \n\
+			return \n\
+		} \n\
+		shell_command( ttcn_dir "/bin/ctags_ttcn3 *.ttcn *.asn *.ttcn3 *.asn1 *.3mp","" )\n\
+		load_tags_file_dialog()\n\
+	}\n\
+	find definition::d:: {\n\
+		ch = get_character($cursor)\n\
+		if( ch ==" " || ch=="\\n" || ch=="\\t") {\n\
+		   dialog("Find definition error:\\nSelect a valid position!", "OK")\n\
+		}\n\
+		else {\n\
+		   sep="[ \\t\\n='\\.,;\\(\\):\\?\\<\\>\\&\\[\\!/\\[\\{\\}]" \n\
+		   a=search(sep,$cursor, "regex","backward")+1\n\
+		   b=search(sep,$cursor, "regex","forward")\n\
+		   keyword = get_range(a,b) \n\
+		   select(a,b)\n\
+		   find_definition(  keyword )\n\
+		}\n\
+	}\n\
+	tagstack>find tag:Ctrl+Bracketright::: {\n\
+		                ##########################################################\n\
+		                # find tag - a wrapper for the built-in find_definition(),\n\
+		                #            Find-tag pushes the caller position into\n\
+		                #            the tag-stack, so we can pop it later, ie.\n\
+		                #            return to caller window & position.\n\
+		                #\n\
+		                # By TKSoh (teekaysoh@yahoo.com), Apr-2005 \n\
+		                ##########################################################\n\
+		                \n\
+		                # initialize tagstack engine if not already did\n\
+		                $tag_data[""] = 1    # avoid macro error on undefined var\n\
+		                if (! ("init" in $tag_data)) {\n\
+		                    $tag_index = 0\n\
+		                    $tag_marker[0]=0\n\
+		                    delete $tag_marker[]\n\
+		                \n\
+		                    $tag_data["init"] = 1    \n\
+		                }\n\
+		                \n\
+		                # grab caller info before finding tag\n\
+		                this_file = $file_path $file_name\n\
+		                \n\
+		                # caller positions are remembered using incremental\n\
+		                # numeric bookmarks.\n\
+		                if (!(this_file in $tag_marker)) {\n\
+		                    $tag_marker[this_file] = 0\n\
+		                    mark_pos = $tag_marker[this_file]\n\
+		                }\n\
+		                \n\
+		                $tag_marker[this_file]++\n\
+		                mark_pos = $tag_marker[this_file]\n\
+		                \n\
+		                # remember the caller position with bookmark\n\
+		                mark(mark_pos)\n\
+		                \n\
+		                # push tag stack\n\
+		                $tag_index++\n\
+		                $tagstack[$tag_index, "window"] = this_file\n\
+		                $tagstack[$tag_index, "bookmark"] = mark_pos\n\
+		                \n\
+		                # find tag definition\n\
+		                find_definition()\n\
+		                \n\
+		        }\n\
+	tagstack>pop tag:Shift+Ctrl+Bracketright::: {\n\
+		                ##########################################################\n\
+		                # pop tag - pop the tag-stack, ie. return to caller\n\
+		                #           window & position.\n\
+		                #\n\
+		                # By TKSoh (teekaysoh@yahoo.com), Apr-2005 \n\
+		                ##########################################################\n\
+		                \n\
+		                # initialize tagstack engine if not already did\n\
+		                $tag_data[""] = 1    # avoid macro error on undefined var\n\
+		                if (! ("init" in $tag_data)) {\n\
+		                    $tag_index = 0\n\
+		                    $tag_marker[0]=0\n\
+		                    delete $tag_marker[]\n\
+		                \n\
+		                    $tag_data["init"] = 1    \n\
+		                }\n\
+		                \n\
+		                # pop if tagstack not empty\n\
+		                if ($tag_index > 0) {\n\
+		                    for ( ;$tag_index > 0; $tag_index--) {\n\
+		                        window = $tagstack[$tag_index, "window"]\n\
+		                        rv = focus_window(window)\n\
+		                        if (rv != "") {\n\
+		                            goto_mark($tagstack[$tag_index, "bookmark"])\n\
+		                            raise_window()\n\
+		                            $tag_marker[window]--\n\
+		                            $tag_index--\n\
+		                            break\n\
+		                        }\n\
+		                        else {\n\
+		                            # window doesn't exist, delete it's mark keeper\n\
+		                            delete $tag_marker[window]\n\
+		                        }\n\
+		                    }\n\
+		                }\n\
+		                else {\n\
+		                    beep()\n\
+		                }\n\
+		        }\n\
+	logmerge_selected:Alt+3::R: {\n\
+		# ttcn_dir = getenv("TTCN3_DIR") \n\
+		                selected=get_selection()\n\
+		                deselect_all()\n\
+		execute_command("/home/ebenkoc/bin/klogmerge.sh /vobs/mmgw/sw/oam_upcf_fro/dev/test/ttcn3/log_files/"selected)\n\
+		#load_tags_file( $file_path"/tags")\n\
+	}\n\
+	find_all:Ctrl+4::: {\n\
+		jf_find_all("")\n\
+	}\n\
+	clear_find_all:Alt+5::: {\n\
+		jf_clear_find_all("")\n\
+	}\n\
+	find_all_selected:Alt+4::R: {\n\
+		jf_find_all_selected("")\n\
+	}\n\
+	toggleLitteral:Ctrl+D::: {\n\
+		toggleLitteral("")\n\
+	}\n\
+	findLitteralF:Ctrl+E::: {\n\
+		findLitteralF("")\n\
+	}\n\
+	findLitteralB:Shift+Ctrl+E::: {\n\
+		findLitteralB("")\n\
+	}\n\
+	insert skeleton...>from file...@TTCN-3:::: {\n\
+		include_file_dialog()\n\
+	}\n\
+	insert skeleton...>ttcn3_module@TTCN-3:::: {\n\
+		insert_skeleton( "ttcn3_module")\n\
+	}\n\
+	insert skeleton..;.>import_part@TTCN-3:::: {\n\
+		insert_skeleton( "import_part")\n\
+	}\n\
+	insert skeleton...>module_param@TTCN-3:::: {\n\
+		insert_skeleton( "module_param")\n\
+	}\n\
+	insert skeleton...>data_type@TTCN-3:::: {\n\
+		insert_skeleton( "data_type")\n\
+	}\n\
+	insert skeleton...>signature@TTCN-3:::: {\n\
+		                insert_skeleton( "signature")\n\
+	}\n\
+	insert skeleton...>port_type@TTCN-3:::: {\n\
+		                insert_skeleton( "port_type")\n\
+	}\n\
+	insert skeleton...>component_type@TTCN-3:::: {\n\
+		                insert_skeleton( "component_type")\n\
+	}\n\
+	insert skeleton...>constant@TTCN-3:::: {\n\
+		                insert_skeleton( "constant")\n\
+	}\n\
+	insert skeleton...>template@TTCN-3:::: {\n\
+		                insert_skeleton( "template")\n\
+	}\n\
+	insert skeleton...>altstep@TTCN-3:::: {\n\
+		                insert_skeleton( "altstep")\n\
+	}\n\
+	insert skeleton...>function@TTCN-3:::: {\n\
+		                insert_skeleton( "function")\n\
+	}\n\
+	insert skeleton...>testcase@TTCN-3:::: {\n\
+		                insert_skeleton( "testcase" )\n\
+	}\n\
+	insert skeleton...>control_part@TTCN-3:::: {\n\
+		                insert_skeleton( "control_part" )\n\
+		        }\n\
+	insert skeleton...>asn1_module@ASN1:::: {\n\
+		                set_language_mode("TTCN-3")\n\
+		                set_language_mode("ASN1")\n\
+		                insert_skeleton( "asn1_module" )\n\
+		        }\n
+nedit.bgMenuCommands: \
+	Undo:::: {\n\
+		undo()\n\
+	}\n\
+	Redo:::: {\n\
+		redo()\n\
+	}\n\
+	Cut:::R: {\n\
+		cut_clipboard()\n\
+	}\n\
+	Copy:::R: {\n\
+		copy_clipboard()\n\
+	}\n\
+	Paste:::: {\n\
+		paste_clipboard()\n\
+	}\n\
+	Indent selected@TTCN-3::i:R: {\n\
+		indentSelected_ttcn3() # see in SmartIndent macros/Language Specific Init. Macro command\n\
+	}\n\
+	Help on Keyword@TTCN-3::K:: {\n\
+		ch = get_character($cursor)\n\
+		if( ch ==" " || ch=="\\n" || ch=="\\t" || ch=="*" || ch==")" || ch=="(" ) {\n\
+		  dialog("Help on keyword error:\\nSelect a valid position!", "OK")\n\
+		                  return\n\
+		}\n\
+		a=search("<",$cursor, "regex","backward")\n\
+		b=search(">",$cursor, "regex","forward")\n\
+		find("<\\\\w+>","regex", "backward", "wrap") \n\
+		ttcn_dir = getenv("TTCN3_DIR") \n\
+		                if( ttcn_dir == "") \n\
+		{ \n\
+		   dialog("Help on keyword refused:\\nEnvironment variable TTCN3_DIR not set", "OK") \n\
+		   return \n\
+		} \n\
+		cmd = ttcn_dir "/bin/ttcn3_help " get_range(a,b)\n\
+		                #dialog( shell_command( "which " ttcn_dir "/bin/ttcn3_help ", ""))\n\
+		                cmd="sh -c '" cmd " > /tmp/nedit_help_on_kwd  2>&1 &' >& /tmp/nedit_help_on_kwd1 &" \n\
+		                o=shell_command( cmd, "")\n\
+		                s = $shell_cmd_status\n\
+		                shell_command("sleep 2", "")\n\
+		                output=read_file("/tmp/nedit_help_on_kwd")\n\
+		                if( length( output ) > 0 ) dialog( "Help on keyword message:\\n" output , "OK" )\n\
+		                shell_command( "rm -f /tmp/nedit_help_on_kwd*","")\n\
+	}\n\
+	find definition::d:: {\n\
+		ch = get_character($cursor)\n\
+		if( ch ==" " || ch=="\\n" || ch=="\\t") {\n\
+		   dialog("Find definition error:\\nSelect a valid position!", "OK")\n\
+		}\n\
+		else {\n\
+		   sep="[ \\t\\n='\\.,;\\(\\):\\?\\<\\>\\&\\[\\!/\\[\\{\\}]" \n\
+		   a=search(sep,$cursor, "regex","backward")+1\n\
+		   b=search(sep,$cursor, "regex","forward")\n\
+		   keyword = get_range(a,b) \n\
+		                   select(a,b)\n\
+		                   #find("<[\\\\w\\\\-]+>","regex", "backward", "wrap") \n\
+		                   #dialog(keyword)\n\
+		   find_definition(  keyword )\n\
+		                }\n\
+	}\n\
+	Change /* */  to //:::R: {\n\
+		# Changes all /*<any chars> */ style comments to // ...<NL> commnents\n\
+		selectionStart = $selection_start\n\
+		selectionEnd = $selection_end\n\
+		pos = selectionStart\n\
+		\n\
+		while( pos < selectionEnd ) {\n\
+		  if( get_character(pos) =="/") { \n\
+		    # /* processing:\n\
+		    pos++\n\
+		    #dialog("1." pos ":" get_character( pos) )\n\
+		    if( pos< selectionEnd && get_character(pos) == "*") {\n\
+		      replace_range(pos-1,pos+1,"//")\n\
+		      pos++\n\
+		      #dialog( "2." pos ":" get_character( pos) )\n\
+		      while( pos <selectionEnd ) {  #search the peer\n\
+			c=get_character(pos)\n\
+			#dialog( "3." pos ":" get_character( pos) )\n\
+			if( c=="\\n") {\n\
+			  #dialog( "4." pos ":" get_character( pos) )\n\
+		    replace_range(pos+1,pos+1,"//")\n\
+			  selectionEnd+=2\n\
+			  pos+=3\n\
+		        }\n\
+		        else if( c=="*" && get_character(pos+1)=="/" ) {\n\
+			  replace_range(pos,pos+2,"\\n")\n\
+		          #dialog("*\\/ reached")\n\
+		          break\n\
+		        }\n\
+			else\n\
+			{\n\
+			  pos++\n\
+			}           \n\
+		      }\n\
+		\n\
+		    } # eof /* processing \n\
+		   \n\
+		  } \n\
+		  else pos++\n\
+		}#while\n\
+		    if( $auto_indent == "off" ) indentSelected_ttcn3() \n\
+	}\n\
+	Calltip for actual word:Ctrl+Semicolon::: {\n\
+		ch = get_character($cursor)\n\
+		if( ch ==" " || ch=="\\n" || ch=="\\t") {\n\
+		   dialog("Find definition error:\\nSelect a valid position!", "OK")\n\
+		}\n\
+		else {\n\
+		   sep="[ \\t\\n='\\.,;\\(\\):\\?\\<\\>\\&\\[\\!/\\[\\{\\}]" \n\
+		   a=search(sep,$cursor, "regex","backward")+1\n\
+		   b=search(sep,$cursor, "regex","forward")\n\
+		   keyword = get_range(a,b) \n\
+		   select(a,b)\n\
+		   calltip(keyword,-1, "tagKey")\n\
+		}\n\
+	}\n
+nedit.highlightPatterns: Ada:Default\n\
+	Awk:Default\n\
+	C++:Default\n\
+	C:Default\n\
+	CSS:Default\n\
+	Csh:Default\n\
+	Fortran:Default\n\
+	Java:Default\n\
+	JavaScript:Default\n\
+	LaTeX:Default\n\
+	Lex:Default\n\
+	Makefile:Default\n\
+	Matlab:Default\n\
+	NEdit Macro:Default\n\
+	Pascal:Default\n\
+	Perl:Default\n\
+	PostScript:Default\n\
+	Python:Default\n\
+	Regex:Default\n\
+	SGML HTML:Default\n\
+	SQL:Default\n\
+	Sh Ksh Bash:Default\n\
+	Tcl:Default\n\
+	VHDL:Default\n\
+	Verilog:Default\n\
+	XML:Default\n\
+	X Resources:Default\n\
+	Yacc:Default\n\
+	E_MonitorTE:1:0{\n\
+		TraceError:"ERROR":::TraceErrorKeyword::\n\
+		TraceDesign:"TRACE1|TRACE2|TRACE3":::TraceDesignKeyword::\n\
+		TraceOthers:"TRACE4|TRACE5|TRACE8|TRACE9":::TraceMiscKeyword::\n\
+		TraceSend:"TRACE6":::TraceSendKeyword::\n\
+		TraceReceived:"TRACE7":::TraceReceivedKeyword::\n\
+		TraceInfo:"INFO":::TraceInfoKeyword::\n\
+		TraceFunction:"ENTER|RETURN":::TraceFunctionKeyword::\n\
+		TraceFromSystem:"STATE CHANGE|REC SIG":::TraceFromSystemKeyword::\n\
+		OwnPhrase1:"] db":"C ..|CR[0-9] .."::OwnPhraseKeyword1::\n\
+		OwnPhrase2:"] cpx":"C ..|CR[0-9] .."::OwnPhraseKeyword2::\n\
+		OwnPhrase3:"] common":"C ..|Cr[0-9] .."::OwnPhraseKeyword3::\n\
+	}\n\
+	ASN1:1:1{\n\
+		README:"ASN.1 highlighting patterns for NEdit 5.1. Version 1.1 author/maintainer: Dave Schulman - davids@pliantsystems.com":::Flag::D\n\
+		Comment:"--":"$|(--)"::Comment::\n\
+		NestedComment:"/\\*":"\\*/"::Comment::\n\
+		String:"""":""""::String::\n\
+		GR303Entity:"[^ ]*TR303":::Label::\n\
+		CMIP Verb:"GET|REPLACE|ADD|REMOVE|ACTIONS|NOTIFICATIONS":::Text Key::\n\
+		CompareType:"<(OPTIONAL|DEFAULT|MANAGED|(MODULE|OBJECT)-(TYPE|IDENTITY|COMPLIANCE)|MODE|CONFIRMED|CONDITIONAL|SUBORDINATE|SUPERIOR|CLASS|TRUE|FALSE|NULL|TEXTUAL-CONVENTION)>":::Identifier1::\n\
+		StatusType:"<(mandatory|current|deprecated|obsolete)>":::Storage Type1::\n\
+		Keyword:"<(DEFINITIONS|OBJECTS|IF|DERIVED|INFORMATION|ACTION|REPLY|ANY|NAME(D| BINDING)|CHARACTERIZED|BEHAVIOUR|REGISTERED|WITH|AS|BY|PRESENT|BEGIN|IMPORTS|OBJECT|IDENTIFIER|FROM|UNITS|SYNTAX|((MIN|MAX)-A|A)CCESS|REVISION|STATUS|DESCRIPTION|SEQUENCE|SET|OF|CHOICE|[^ ]*DistinguishedName|ENUMERATED|SIZE|OBJECT(-TYPE| IDENTIFIER)|MODULE|END|INDEX|AUGMENTS|EXTENSIBILITY|IMPLIED|EXPORTS)>":::Keyword::\n\
+		Tag:"<(TAGS|AUTOMATIC|IMPLICIT|EXPLICIT|UNIVERSAL|PRIVATE|APPLICATION)>":::Character Const::\n\
+		Storage:"<(BOOLEAN|INTEGER|InterfaceIndex|IANAifType|CMIP-Attribute|(BIT|OCTET) STRING|REAL|PACKAG(E|ES)|(Ip|Phys|Network)Address|BITS|Time(Stamp|Ticks)|TruthValue|RowStatus|(Display|Graphic|Printable|SnmpAdmin)String|(Unsigned|Integer)32|Gauge(|32)|Counter(|32|64))>":::Storage Type::\n\
+		Modifier:"<(ATTRIBUT(E|ES)|(MANDATORY-|)GROU(P|PS)|ELEMENTS|MATCHES FOR|EQUALITY(,|;)|ORDERING(,|;)|SUBSTRINGS(,|;)|DEFINED)>":::Identifier::\n\
+		AccessType:"<(not-accessible|accessible-for-notify|read-(only|create|write))>":::Text Arg::\n\
+		Range:"\\(":"\\)"::String2::\n\
+		Identifier:"<[A-Za-z][A-Za-z0-9\\-]*>":::Identifier::\n\
+	}\n\
+	TTCN-3:1:0{\n\
+		comment:"/\\*":"\\*/"::Comment::\n\
+		cpluspluscomment:"//":"\\n"::Comment::\n\
+		float:"<(0|[1-9][0-9]*)((.[0-9]+)|((.[0-9]+)?[Ee][+-]?(0|[1-9][0-9]*)))>":::Numeric Const::D\n\
+		number:"<(0|[1-9][0-9]*)>":::Numeric Const::D\n\
+		charstring:"""(\\\\.|[^""])*""":::String::\n\
+		bitstring:"'[01]*'B":::Character Const::D\n\
+		bitstring_pattern:"'[01\\?\\*]*'B":::Preprocessor::D\n\
+		hexstring:"'[0-9A-Fa-f]*'H":::Character Const::D\n\
+		hexstring_pattern:"'[0-9A-Fa-f\\?\\*]*'H":::Preprocessor::D\n\
+		octetstring:"'([0-9a-fA-F][0-9a-fA-F])*'O":::Character Const::D\n\
+		octetstring_pattern:"'(([0-9a-fA-F][0-9a-fA-F])|[?*])*'O":::Preprocessor::D\n\
+		template_match:"<\\?|\\*|complement|ifpresent|subset|superset|permutation>":::Preprocessor::D\n\
+		keyword:"<(activate|address|alive|all|alt|altstep|and|and4b|any|case|component|const|control|deactivate|display|do|else|encode|enumerated|except|exception|execute|extends|extension|external|for|from|function|goto|group|if|import|in|infinity|inout|interleave|label|language|length|log|match|message|mixed|mod|modifies|module|modulepar|mtc|noblock|not|not4b|nowait|of|on|optional|or|or4b|out|override|param|pattern|port|procedure|record|recursive|rem|repeat|return|runs|select|self|sender|set|signature|system|template|testcase|timer|to|type|union|value|valueof|var|variant|while|with|xor|xor4b)>":::Keyword::D\n\
+		type:"<(anytype|bitstring|boolean|char|charstring|default|float|hexstring|integer|objid|octetstring|universal|verdicttype)>":::Storage Type::D\n\
+		timer_op:"<(start|stop|timeout|read|running)>":::Preprocessor1::D\n\
+		port_op:"<(call|catch|check|clear|getcall|getreply|halt|raise|receive|reply|send|trigger)>":::Preprocessor1::D\n\
+		config_op:"<(create|connect|disconnect|done|kill|killed|map|unmap)>":::Preprocessor1::D\n\
+		verdict_op:"<(getverdict|setverdict)>":::Preprocessor1::D\n\
+		sut_op:"<(action)>":::Preprocessor1::D\n\
+		predefined_op:"<(bit2hex|bit2int|bit2oct|bit2str|char2int|char2oct|decomp|float2int|float2str|hex2bit|hex2int|hex2oct|hex2str|int2bit|int2char|int2float|int2hex|int2oct|int2str|int2unichar|ischosen|ispresent|lengthof|oct2bit|oct2char|oct2hex|oct2int|oct2str|regexp|replace|rnd|sizeof|sizeoftype|str2bit|str2float|str2hex|str2int|str2oct|substr|unichar2int)>":::Keyword::D\n\
+		boolean_const:"<(true|false)>":::Numeric Const::D\n\
+		verdict_const:"<(none|pass|inconc|fail|error)>":::Character Const::D\n\
+		other_const:"<(null|NULL|omit)>":::Character Const::D\n\
+		braces:"[\\[({})\\]]":::Keyword::D\n\
+		identifier:"<[A-Za-z][A-Za-z0-9_]*>":::Identifier::D\n\
+	}\n\
+	TTCN-3 config:1:0{\n\
+		cfg comment:"#":"$"::Text Comment::\n\
+		cplus comment:"//":"$"::Text Comment::\n\
+		float:"<(0|[1-9][0-9]*)((.[0-9]+)|((.[0-9]+)?[Ee][+-]?(0|[1-9][0-9]*)))>":::Numeric Const::D\n\
+		number:"<(0|[1-9][0-9]*)>":::TTCN-3 cfg number::D\n\
+		string:"""(\\\\.|[^""])*""":::String1::\n\
+		bitstring:"'[01]*'B":::Character Const::\n\
+		hexastring1:"'[0-9A-Fa-f]*'H":::TTCN-3 cfg octetstr::\n\
+		octetstring1:"'([0-9a-fA-F][0-9a-fA-F])*'O":::TTCN-3 cfg octetstr::\n\
+		character constant:"'":"'"::Subroutine::\n\
+		section title:"^(?:^\\[LOGGING\\]|^\\[EXECUTE\\]|^\\[TESTPORT_PARAMETERS\\]|^\\[MODULE_PARAMETERS\\]|^\\[MAIN_CONTROLLER\\]|^\\[EXTERNAL_COMMANDS\\]|^\\[GROUPS\\]|\\[COMPONENTS\\])":::TTCN-3 cfg section title::\n\
+		keyword:"^(?:^LogFile|^FileMask|^ConsoleMask|^AppendFile|^TimeStampFormat|^LogEventTypes|^SourceInfoFormat|^LogEntityName|^LogSourceInfo)":::TTCN-3 cfg keyword::\n\
+		file and control mask options:"<(?:TTCN_ERROR|TTCN_WARNING|TTCN_PORTEVENT|TTCN_TIMEROP|TTCN_VERDICTOP|TTCN_DEFAULTOP|TTCN_TESTCASE|TTCN_ACTION|TTCN_USER|TTCN_FUNCTION|TTCN_STATISTICS|TTCN_PARALLEL|TTCN_MATCHING|TTCN_DEBUG|LOG_ALL|LOG_NOTHING)":::TTCN-3 cfg file mask options::\n\
+		external command types:"(^BeginControlPart|^EndControlPart|^BeginTestCase|^EndTestCase)":::Storage Type::\n\
+		options:"<(?:Yes|No)>":::String::\n\
+		identifier:"<[A-Za-z][A-Za-z0-9_]*>":::Identifier::\n\
+		braces:"[{}()]":::Keyword::\n\
+		comment:"/\\*":"\\*/"::Text Comment::\n\
+		assignment:"(:=)":::Keyword::\n\
+	}\n\
+	TTCN-3 log:1:0{\n\
+		Timestamp:"[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9]+":::Warning::\n\
+		Keywords:"<(MC|HC|system|Start|Starting|Stop|Stopping|cleared|function|Function|testcase|Testcase|timer|Timeout|Connected to|Disconnected from|getverdict|setverdict|Port|Ports|Map)>":::Keyword::\n\
+		PortReceiveSingleLine:"Received on .+ from .+ .+ \\{.*\\}":::String3::\n\
+		PortReceiveSingleLine:"Message enqueued on .+ from .+ .+ \\{.*\\}":::String3::\n\
+		PortReceiveSingleLine:"Receive operation on .+ from .+ .+ \\{.*\\}":::String3::\n\
+		ExpectedSignal:".+ Expected signal: .+ \\{.*\\}":::String4::\n\
+		ExpectedSignal:".+ Expected signals: .+ \\{.*\\}":::String4::\n\
+		PortReceiveMultiLine:"Received on .+ from .+ .+ \\{":"^\\}"::String::\n\
+		PortSendSingleLine:"Sent on .+ to .+ .+ \\{[^}]+\\}":::Identifier1::\n\
+		PortSendMultiLine:"Sent on .+ to .+ .+ \\{":"^\\}"::Identifier1::\n\
+		VerdictPass:"pass":::String2::\n\
+		VerdictFail:"<fail>":::Flag::\n\
+		VerdictError:"error":::Flag::\n\
+		Unmatch:"<unmatched>":::Flag::\n\
+		VerdictNone:"none":::Text Arg::\n\
+		VerdictInconc:"inconc":::Flag::\n\
+		ID:"id [1-9][0-9]*":::Storage Type::\n\
+		USER:"USER [^(ERROR)].+":::USER message::\n\
+		USER ERROR:"USER ERROR: .+":::USER ERROR message::\n\
+	}
+nedit.languageModes: 	Ada:.ada .ad .ads .adb .a:::::::\n\
+	Awk:.awk:::::::\n\
+	C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::".,/\\`'!|@#%^&*()-=+{}[]"":;<>?~":\n\
+	C:.c .h::::::".,/\\`'!|@#%^&*()-=+{}[]"":;<>?~":\n\
+	CSS:css::Auto:None:::".,/\\`'!|@#%^&*()=+{}[]"":;<>?~":\n\
+	Csh:.csh .cshrc .login .logout:"^[ \\t]*#[ \\t]*![ \\t]*/bin/csh"::::::\n\
+	Fortran:.f .f77 .for:::::::\n\
+	Java:.java:::::::\n\
+	JavaScript:.js:::::::\n\
+	LaTeX:.tex .sty .cls .dtx .ins:::::::\n\
+	Lex:.lex:::::::\n\
+	Makefile:Makefile makefile .gmk:::None:8:8::\n\
+	Matlab:.m .oct .sci:::::::\n\
+	NEdit Macro:.nm .neditmacro:::::::\n\
+	Pascal:.pas .p .int:::::::\n\
+	Perl:.pl .pm .p5 .PL:"^[ \\t]*#[ \\t]*!.*perl":Auto:None:::".,/\\\\`'!$@#%^&*()-=+{}[]"":;<>?~|":\n\
+	PostScript:.ps .eps .epsf .epsi:"^%!":::::"/%(){}[]<>":\n\
+	Python:.py:"^#!.*python":Auto:None:::"!""#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~":\n\
+	Regex:.reg .regex:"\\(\\?[:#=!iInN].+\\)":None:Continuous::::\n\
+	SGML HTML:.sgml .sgm .html .htm:"\\<[Hh][Tt][Mm][Ll]\\>"::::::\n\
+	SQL:.sql:::::::\n\
+	Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)"::::::\n\
+	Tcl:.tcl .tk .itcl .itk::Smart:None::::\n\
+	VHDL:.vhd .vhdl .vdl:::::::\n\
+	Verilog:.v:::::::\n\
+	XML:.xml .xsl .dtd:"\\<(?i\\?xml|!doctype)"::None:::"<>/=""'()+*?|":\n\
+	X Resources:.Xresources .Xdefaults .nedit nedit.rc:"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults"::::::\n\
+	Yacc:.y::::::".,/\\`'!|@#%^&*()-=+{}[]"":;<>?~":\n\
+	E_MonitorTE:.mte::None:None::::\n\
+	ASN1:.mib .asn .mo .asn1::::::".,/\\`'!|@#%^&*()=+{}[]"":;<>?~":\n\
+	TTCN-3:.ttcn .ttcn3 .3mp::Smart::8:2:".,/\\`'!|@#%^&*()=+{}[]"":;<>?~-":\n\
+	TTCN-3 config:.cfg::::8:2:".,/\\`'!|@#%^&*()-=+{}[]"":;<>?~$":\n\
+	TTCN-3 log:.log::::8:2:".,/\\`'!|@#%^&*()-=+{}[]"":;<>?~$":
+nedit.styles: 	Plain:black:Plain\n\
+	Comment:gray20:Italic\n\
+	Keyword:black:Bold\n\
+	Storage Type:brown:Bold\n\
+	Storage Type1:saddle brown:Bold\n\
+	String:darkGreen:Plain\n\
+	String1:SeaGreen:Plain\n\
+	String2:darkGreen:Bold\n\
+	String3:ForestGreen:Plain\n\
+	String4:DeepPink3:Plain\n\
+	Preprocessor:RoyalBlue4:Plain\n\
+	Preprocessor1:blue:Plain\n\
+	Character Const:darkGreen:Plain\n\
+	Numeric Const:darkGreen:Plain\n\
+	Identifier:chocolate:Plain\n\
+	Identifier1:RoyalBlue4:Plain\n\
+	Identifier2:SteelBlue:Plain\n\
+	Subroutine:brown:Plain\n\
+	Subroutine1:chocolate:Plain\n\
+	Ada Attributes:plum:Bold\n\
+	Label:red:Italic\n\
+	Flag:red:Bold\n\
+	Text Comment:SteelBlue4:Italic\n\
+	Text Key:VioletRed4:Bold\n\
+	Text Key1:VioletRed4:Plain\n\
+	Text Arg:RoyalBlue4:Bold\n\
+	Text Arg1:SteelBlue4:Bold\n\
+	Text Arg2:RoyalBlue4:Plain\n\
+	Text Escape:gray30:Bold\n\
+	LaTeX Math:darkGreen:Plain\n\
+	Pointer:#660000:Bold\n\
+	Regex:#009944:Bold\n\
+	Warning:brown2:Italic\n\
+	TraceDesignKeyword:blue:Bold\n\
+	TraceErrorKeyword:red:Bold\n\
+	TraceMiscKeyword:black:Bold\n\
+	TraceSendKeyword:turquoise4:Bold\n\
+	TraceReceivedKeyword:green3:Bold\n\
+	TraceInfoKeyword:cyan3:Bold\n\
+	TraceFunctionKeyword:yellow4:Plain\n\
+	TraceFromSystemKeyword:black:Bold Italic\n\
+	OwnPhraseKeyword1:brown4:Bold\n\
+	OwnPhraseKeyword2:tomato3:Bold\n\
+	OwnPhraseKeyword3:orange3:Bold\n\
+	TTCN-3 cfg section title:Black/Yellow:Bold\n\
+	TTCN-3 cfg keyword:Black:Bold\n\
+	TTCN-3 cfg octetstr:DarkGreen:Plain\n\
+	TTCN-3 cfg string:SeaGreen:Plain\n\
+	TTCN-3 cfg file mask options:SeaGreen:Bold\n\
+	TTCN-3 cfg number:SeaGreen:Plain\n\
+	USER message:green/yellow:Bold Italic\n\
+	USER ERROR message:red/yellow:Bold Italic
+nedit.smartIndentInit: 	C:Default\n\
+	C++:Default\n\
+	Python:Default\n\
+	Matlab:Default\n\
+	TTCN-3:	--End-of-Macro--\n\
+	#return cFindSmartIndentDist_ttcn3( $1 )\n\
+	return smartIndentLine_ttcn3()\n\
+	--End-of-Macro--\n\
+	if ($2 == "}" || $2 == "{" || $2 == "#")\n\
+	    cBraceOrPound( $1, $2)\n\
+	--End-of-Macro--
+nedit.smartIndentInitCommon: 	# C/C++ Style/tuning parameters \n\
+	#\n\
+\n\
+	# Number of characters in a normal indent level.  May be a number, or the\n\
+	# string "default", meaning, guess the value from the current tab settings.\n\
+	$cIndentDist = "default"\n\
+\n\
+	# Number of characters in a line continuation.  May be a number or the\n\
+	# string "default", meaning, guess the value from the current tab settings.\n\
+	$cContinuationIndent = "default"\n\
+\n\
+	# How far back from the current position to search for an anchoring position\n\
+	# on which to base indent.  When no reliable indicators of proper indent level\n\
+	# can be found within the requested distance, reverts to plain auto indent.\n\
+	$cMaxSearchBackLines = 10\n\
+\n\
+	#\n\
+	# Find the start of the line containing position $1\n\
+	#\n\
+	define startOfLine {\n\
+\n\
+	    for (i=$1-1; ; i--) {\n\
+        	if (i <= 0)\n\
+        	    return 0\n\
+        	if (get_character(i) == "\\n")\n\
+        	    return i + 1\n\
+	    }\n\
+	}\n\
+\n\
+	#\n\
+	# Find the indent level of the line containing character position $1\n\
+	#\n\
+	define measureIndent {\n\
+\n\
+	    # measure the indentation to the first non-white character on the line\n\
+	    indent = 0\n\
+	    for (i=startOfLine($1); i < $text_length; i++) {\n\
+        	c = get_character(i)\n\
+        	if (c != " " && c != "\\t")\n\
+        	    break\n\
+        	if (c == "\\t")\n\
+        	    indent += $tab_dist - (indent % $tab_dist)\n\
+        	else\n\
+        	    indent++\n\
+	    }\n\
+	    return indent\n\
+	}\n\
+\n\
+	#\n\
+	# Make a string to produce an indent of $1 characters\n\
+	#\n\
+	define makeIndentString {\n\
+\n\
+	    if ($use_tabs) {\n\
+        	nTabs = $1 / $tab_dist\n\
+        	nSpaces = $1 % $tab_dist\n\
+	    } else {\n\
+        	nTabs = 0\n\
+        	nSpaces = $1\n\
+	    }\n\
+	    indentString = ""\n\
+	    for (i=0; i<nTabs; i++)\n\
+        	indentString = indentString "\\t"\n\
+	    for (i=0; i<nSpaces; i++)\n\
+        	indentString = indentString " "\n\
+	    return indentString\n\
+	}\n\
+\n\
+	#\n\
+	# If $1 is a number, just pass it on.  If it is the string "default",\n\
+	# figure out a reasonable indent distance for a structured languages\n\
+	# like C, based on how tabs are set.\n\
+	#\n\
+	define defaultIndent {\n\
+\n\
+	    if ($1 != "default")\n\
+        	return $1\n\
+	    if ($em_tab_dist != -1)\n\
+        	return $em_tab_dist\n\
+	    if ($tab_dist <= 8)\n\
+        	return $tab_dist\n\
+	    return 4\n\
+	}\n\
+\n\
+	#\n\
+	# If $1 is a number, just pass it on.  If it is the string "default",\n\
+	# figure out a reasonable amount of indentation for continued lines\n\
+	# based on how tabs are set.\n\
+	#\n\
+	define defaultContIndent {\n\
+\n\
+	    if ($1 != "default")\n\
+        	return $1\n\
+	    if ($em_tab_dist != -1)\n\
+        	return $em_tab_dist * 2\n\
+	    if ($tab_dist <= 8)\n\
+        	return $tab_dist * 2\n\
+	    return 8\n\
+	}\n\
+\n\
+	#\n\
+	# Find the end of the conditional part of if/while/for, by looking for balanced\n\
+	# parenthesis between $1 and $2.  returns -1 if parens don't balance before\n\
+	# $2, or if no parens are found\n\
+	#\n\
+	define findBalancingParen {\n\
+\n\
+	    openParens = 0\n\
+	    parensFound = 0\n\
+	    for (i=$1; i<$2; i++) {\n\
+        	c = get_character(i)\n\
+        	if (c == "(") {\n\
+        	    openParens++\n\
+        	    parensFound = 1\n\
+        	} else if (c == ")")\n\
+        	    openParens--\n\
+        	else if (!parensFound && c != " " && c != "\\t")\n\
+        	    return -1\n\
+        	if (parensFound && openParens <=0)\n\
+        	    return i+1\n\
+	    }\n\
+	    return -1\n\
+	}\n\
+\n\
+	#\n\
+	# Skip over blank space and comments and preprocessor directives from position\n\
+	# $1 to a maximum of $2.\n\
+	# if $3 is non-zero, newlines are considered blank space as well.  Return -1\n\
+	# if the maximum position ($2) is hit mid-comment or mid-directive\n\
+	#\n\
+	define cSkipBlankSpace {\n\
+\n\
+	    for (i=$1; i<$2; i++) {\n\
+        	c = get_character(i)\n\
+        	if (c == "/") {\n\
+        	    if (i+1 >= $2)\n\
+                	return i\n\
+        	    if (get_character(i+1) == "*") {\n\
+                	for (i=i+1; ; i++) {\n\
+                	    if (i+1 >= $2)\n\
+                        	return -1\n\
+                	    if (get_character(i) == "*" && get_character(i+1) == "/") {\n\
+                        	i++\n\
+                        	break\n\
+                	    }\n\
+                	}\n\
+        	    } else if (get_character(i+1) == "/") {\n\
+                	for (i=i+1; i<$2; i++) {\n\
+                	    if (get_character(i) == "\\n") {\n\
+                        	if (!$3)\n\
+                        	    return i\n\
+                        	break\n\
+                	    }\n\
+                	}\n\
+        	    }\n\
+        	} else if (c == "#" && $3) {\n\
+        	    for (i=i+1; ; i++) {\n\
+                	if (i >= $2) {\n\
+                	    if (get_character(i-1) == "\\\\")\n\
+                        	return -1\n\
+                	    else\n\
+                        	break\n\
+                	}\n\
+                	if (get_character(i) == "\\n" && get_character(i-1) != "\\\\")\n\
+                	    break\n\
+        	    }\n\
+        	} else if (!(c == " " || c == "\\t" || ($3 && c=="\\n")))\n\
+        	    return i\n\
+	    }\n\
+	    return $2\n\
+	}\n\
+\n\
+	#\n\
+	# Search backward for an anchor point: a line ending brace, or semicolon\n\
+	# or case statement, followed (ignoring blank lines and comments) by what we\n\
+	# assume is a properly indented line, a brace on a line by itself, or a case\n\
+	# statement.  Returns the position of the first non-white, non comment\n\
+	# character on the line.  returns -1 if an anchor position can't be found\n\
+	# before $cMaxSearchBackLines.\n\
+	#\n\
+	define cFindIndentAnchorPoint {\n\
+\n\
+	    nLines = 0\n\
+	    anchorPos = $1\n\
+	    for (i=$1-1; i>0; i--) {\n\
+        	c = get_character(i)\n\
+        	if (c == ";" || c == "{" || c == "}" || c == ":") {\n\
+\n\
+        	    # Verify that it's line ending\n\
+        	    lineEnd = cSkipBlankSpace(i+1, $1, 0)\n\
+        	    if (lineEnd == -1 || \\\n\
+                	    (lineEnd != $text_length && get_character(lineEnd) != "\\n"))\n\
+                	continue\n\
+\n\
+        	    # if it's a colon, it's only meaningful if "case" begins the line\n\
+        	    if (c == ":") {\n\
+                	lineStart = startOfLine(i)\n\
+                	caseStart = cSkipBlankSpace(lineStart, lineEnd, 0)\n\
+                	if (get_range(caseStart, caseStart+4) != "case")\n\
+                	    continue\n\
+                	delim = get_character(caseStart+4)\n\
+                	if (delim!=" " && delim!="\\t" && delim!="(" && delim!=":")\n\
+                	    continue\n\
+                	isCase = 1\n\
+        	    } else\n\
+                	isCase = 0\n\
+\n\
+        	    # Move forward past blank lines and comment lines to find\n\
+        	    #    non-blank, non-comment line-start\n\
+        	    anchorPos = cSkipBlankSpace(lineEnd, $1, 1)\n\
+\n\
+        	    # Accept if it's before the requested position, otherwise\n\
+        	    #    continue further back in the file and try again\n\
+        	    if (anchorPos != -1 && anchorPos < $1)\n\
+                	break\n\
+\n\
+        	    # A case statement by itself is an acceptable anchor\n\
+        	    if (isCase)\n\
+                	return caseStart\n\
+\n\
+        	    # A brace on a line by itself is an acceptable anchor, even\n\
+        	    #    if it doesn't follow a semicolon or another brace\n\
+        	    if (c == "{" || c == "}") {\n\
+                	for (j = i-1; ; j--) {\n\
+                	    if (j == 0)\n\
+                        	return i\n\
+                	    ch = get_character(j)\n\
+                	    if (ch == "\\n")\n\
+                	       return i\n\
+                	    if (ch != "\\t" && ch != " ")\n\
+                	       break\n\
+                	}\n\
+        	    }\n\
+\n\
+        	} else if (c == "\\n")\n\
+        	    if (++nLines > $cMaxSearchBackLines)\n\
+                	return -1\n\
+	    }\n\
+	    if (i <= 0)\n\
+        	return -1\n\
+	    return anchorPos\n\
+	}\n\
+\n\
+	#\n\
+	# adjust the indent on a line about to recive either a right or left brace\n\
+	# or pound (#) character ($2) following position $1\n\
+	#\n\
+	define cBraceOrPound {\n\
+\n\
+	    # Find start of the line, and make sure there's nothing but white-space\n\
+	    #   before the character.  If there's anything before it, do nothing\n\
+	    for (i=$1-1; ; i--) {\n\
+        	if (i < 0) {\n\
+        	    lineStart = 0\n\
+        	    break\n\
+        	}\n\
+        	c = get_character(i)\n\
+        	if (c == "\\n") {\n\
+        	    lineStart = i + 1\n\
+        	    break\n\
+        	}\n\
+        	if (c != " " && c != "\\t")\n\
+        	    return\n\
+	    }\n\
+\n\
+	    # If the character was a pound, drag it all the way to the left margin\n\
+	    if ($2 == "#") {\n\
+        	replace_range(lineStart, $1, "")\n\
+        	return\n\
+	    }\n\
+\n\
+	    # Find the position on which to base the indent\n\
+	    indent = cFindSmartIndentDist($1 - 1, "noContinue")\n\
+	    if (indent == -1)\n\
+        	return\n\
+\n\
+	    # Adjust the indent if it's a right brace (left needs no adjustment)\n\
+	    if ($2 == "}") {\n\
+        	indent -= defaultIndent($cIndentDist)\n\
+        	if (indent < 0)\n\
+        	    indent = 0\n\
+	    }\n\
+\n\
+	    # Replace the current indent with the new indent string\n\
+	    insertStr = makeIndentString(indent)\n\
+	    replace_range(lineStart, $1, insertStr)\n\
+	}\n\
+\n\
+	#\n\
+	# Find Smart Indent Distance for a newline character inserted at $1,\n\
+	# or return -1 to give up.  Adding the optional argument "noContinue"\n\
+	# will stop the routine from inserting line continuation indents\n\
+	#\n\
+	define cFindSmartIndentDist {\n\
+\n\
+	    # Find a known good indent to base the new indent upon\n\
+	    anchorPos = cFindIndentAnchorPoint($1)\n\
+	    if (anchorPos == -1)\n\
+        	return -1\n\
+\n\
+	    # Find the indentation of that line\n\
+	    anchorIndent = measureIndent(anchorPos)\n\
+\n\
+	    # Look for special keywords which affect indent (for, if, else while, do)\n\
+	    #    and modify the continuation indent distance to the normal indent\n\
+	    #    distance when a completed statement of this type occupies the line.\n\
+	    if ($n_args >= 2 && $2 == "noContinue") {\n\
+        	continueIndent = 0\n\
+        	$allowSemi = 0\n\
+	    } else\n\
+        	continueIndent = cCalcContinueIndent(anchorPos, $1)\n\
+\n\
+	    # Move forward from anchor point, ignoring comments and blank lines,\n\
+	    #   remembering the last non-white, non-comment character.  If $1 is\n\
+	    #   in the middle of a comment, give up\n\
+	    lastChar = get_character(anchorPos)\n\
+	    if (anchorPos < $1) {\n\
+        	for (i=anchorPos;;) {\n\
+        	    i = cSkipBlankSpace(i, $1, 1)\n\
+        	    if (i == -1)\n\
+                	return -1\n\
+        	    if (i >= $1)\n\
+                	break\n\
+        	    lastChar = get_character(i++)\n\
+        	}\n\
+	    }\n\
+\n\
+	    # Return the new indent based on the type of the last character.\n\
+	    #   In a for stmt, however, last character may be a semicolon and not\n\
+	    #   signal the end of the statement\n\
+	    if (lastChar == "{")\n\
+        	return anchorIndent + defaultIndent($cIndentDist)\n\
+	    else if (lastChar == "}")\n\
+        	return anchorIndent\n\
+	    else if (lastChar == ";") {\n\
+        	if ($allowSemi)\n\
+        	    return anchorIndent + continueIndent\n\
+        	else\n\
+        	    return anchorIndent\n\
+	    } else if (lastChar == ":" && get_range(anchorPos, anchorPos+4) == "case")\n\
+        	return anchorIndent + defaultIndent($cIndentDist)\n\
+	    return anchorIndent + continueIndent\n\
+	}\n\
+\n\
+	#\n\
+	# Calculate the continuation indent distance for statements not ending in\n\
+	# semicolons or braces.  This is not necessarily $continueIndent.  It may\n\
+	# be adjusted if the statement contains if, while, for, or else.\n\
+	#\n\
+	# As a side effect, also return $allowSemi to help distinguish statements\n\
+	# which might contain an embedded semicolon, which should not be interpreted\n\
+	# as an end of statement character.\n\
+	#\n\
+	define cCalcContinueIndent {\n\
+\n\
+	    anchorPos = $1\n\
+	    maxPos = $2\n\
+\n\
+	    # Figure out if the anchor is on a keyword which changes indent.  A special\n\
+	    #   case is made for elses nested in after braces\n\
+	    anchorIsFor = 0\n\
+	    $allowSemi = 0\n\
+	    if (get_character(anchorPos) == "}") {\n\
+        	for (i=anchorPos+1; i<maxPos; i++) {\n\
+        	    c = get_character(i)\n\
+        	    if (c != " " && c != "\\t")\n\
+                	break\n\
+        	}\n\
+        	if (get_range(i, i+4) == "else") {\n\
+        	    keywordEnd = i + 4\n\
+        	    needsBalancedParens = 0\n\
+        	} else\n\
+        	    return defaultContIndent($cContinuationIndent)\n\
+	    } else if (get_range(anchorPos, anchorPos + 4) == "else") {\n\
+        	keywordEnd = anchorPos + 4\n\
+        	needsBalancedParens = 0\n\
+	    } else if (get_range(anchorPos, anchorPos + 2) == "do") {\n\
+        	keywordEnd = anchorPos + 2\n\
+        	needsBalancedParens = 0\n\
+	    } else if (get_range(anchorPos, anchorPos + 3) == "for") {\n\
+        	keywordEnd = anchorPos + 3\n\
+        	anchorIsFor = 1\n\
+        	needsBalancedParens = 1\n\
+	    } else if (get_range(anchorPos, anchorPos + 2) == "if") {\n\
+        	keywordEnd = anchorPos + 2\n\
+        	needsBalancedParens = 1\n\
+	    } else if (get_range(anchorPos, anchorPos + 5) == "while") {\n\
+        	keywordEnd = anchorPos + 5\n\
+        	needsBalancedParens = 1\n\
+	    } else\n\
+        	return defaultContIndent($cContinuationIndent)\n\
+\n\
+	    # If the keyword must be followed balanced parenthesis, find the end of\n\
+	    # the statement by following balanced parens.  If the parens aren't\n\
+	    # balanced by maxPos, continue the condition.  In the special case of\n\
+	    # the for keyword, a semicolon can end the line and the caller should be\n\
+	    # signaled to allow that\n\
+	    if (needsBalancedParens) {\n\
+        	stmtEnd = findBalancingParen(keywordEnd, maxPos)\n\
+        	if (stmtEnd == -1) {\n\
+        	    $allowSemi = anchorIsFor\n\
+        	    return defaultContIndent($cContinuationIndent)\n\
+        	}\n\
+	    } else\n\
+        	stmtEnd = keywordEnd\n\
+\n\
+	    # check if the statement ends the line\n\
+	    lineEnd = cSkipBlankSpace(stmtEnd, maxPos, 0)\n\
+	    if (lineEnd == -1)                      # ends in comment or preproc\n\
+        	return -1\n\
+	    if (lineEnd == maxPos)                  # maxPos happens at stmt end\n\
+        	return defaultIndent($cIndentDist)\n\
+	    c = get_character(lineEnd)\n\
+	    if (c != "\\n")                         # something past last paren on line,\n\
+        	return defaultIndent($cIndentDist)  #   probably quoted or extra braces\n\
+\n\
+	    # stmt contintinues beyond matching paren && newline, we're in\n\
+	    #   the conditional part, calculate the continue indent distance\n\
+	    #   recursively, based on the anchor point of the new line\n\
+	    newAnchor = cSkipBlankSpace(lineEnd+1, maxPos, 1)\n\
+	    if (newAnchor == -1)\n\
+        	return -1\n\
+	    if (newAnchor == maxPos)\n\
+        	return defaultIndent($cIndentDist)\n\
+	    return cCalcContinueIndent(newAnchor, maxPos) + defaultIndent($cIndentDist)\n\
+	}\n\
+	###############################################################################\n\
+	# TCCN3 Macros and tuning parameters are shared with TTCN-3, and are declared\n\
+	# in the common section.  Press Common / Shared Initialization above.\n\
+	###############################################################################\n\
+	define insert_skeleton{\n\
+	  dir = getenv( "TTCN3_DIR" )\n\
+	  if( length(dir) == 0 ) {\n\
+	     dialog("Insert skeleton refused:\\nEnvironment variable TTCN3_DIR is not set!", "OK")\n\
+	     return\n\
+	  }\n\
+	  include_file( dir "/etc/skeleton/" $1 ".skeleton" )\n\
+	}\n\
+	define debug_ttcn3 {\n\
+	  t_print("\\nDEBUG:" $1 )\n\
+	}\n\
+\n\
+	define warning_ttcn3 {\n\
+	  if($2) t_print("\\nWARNING:" $1 )\n\
+	}\n\
+\n\
+	define beginningOfLine {  \n\
+	  startOfLinePos = search("^", $1, "regex", "backward")\n\
+	  if (startOfLinePos == -1) startOfLinePos = 0\n\
+	  return startOfLinePos\n\
+	}\n\
+\n\
+	# gets the end of line pos of the actual line\n\
+	# $1 = position contained in the line \n\
+	define endOfLine {  \n\
+	  endOfLinePos = search("$", $1, "regex", "forward")\n\
+	  if (endOfLinePos == -1) endOfLinePos = $text_length-1\n\
+	  return endOfLinePos\n\
+	}\n\
+\n\
+	# gets the first character position in the window/file from the \n\
+	# beginning of the line\n\
+	# $1= first char position in the line \n\
+	# $2: max value of position to examine\n\
+	define getFirstNonSpace {\n\
+	  pos=$1\n\
+	  maxpos=$2     \n\
+	  c= get_character(pos) \n\
+	  while( (c==" " || c=="\\t") && (pos<maxpos) ) {\n\
+	    c = get_character(++pos)\n\
+	  }\n\
+	  return pos\n\
+	}\n\
+\n\
+	# removes spaces and tabs from the beginning of the current line\n\
+	# $1: 1st char position in the current line \n\
+	# $2: max value of position to examine\n\
+\n\
+	define stripLeadingSpaces {\n\
+	  pos = $1\n\
+	  nosp = getFirstNonSpace(pos,$2)\n\
+	  if(nosp > pos) replace_range(pos,lastspace,"")\n\
+	  return (nosp - pos)\n\
+	}\n\
+\n\
+	# indents actual line containing $1. \n\
+	# $2 max value of position to examine\n\
+	# $3 length of indentation \n\
+	# $4  forceIndent: 1: indent\n\
+	#                  0: don't indent (smart indent preveious lines)\n\
+	# Returns with the growth of the line length=\n\
+	# len of new line - len of old line\n\
+	#\n\
+	define indentActualLine {\n\
+	  #if( $4 == 0 ) return 0\n\
+	  s=beginningOfLine($1)\n\
+	  nosp = getFirstNonSpace(s, $2)\n\
+	  #debug_ttcn3("s/nosp:" s "/" nosp "/" get_character(nosp) "/")\n\
+	  if( get_character(nosp) == "\\n" ) \n\
+	  {\n\
+	    replace_range(s,nosp,"")\n\
+	    #debug_ttcn3( "bingo")\n\
+	    return (s-nosp)\n\
+	  }\n\
+	  else\n\
+	  {\n\
+	    if( $4 == 0 ) return 0\n\
+	    if( get_character(nosp) == "/" && get_character(nosp+1) =="*")\n\
+	    {\n\
+	      replace_range(s,nosp,"")\n\
+	      return (s-nosp)\n\
+	    }\n\
+	    else\n\
+	    {\n\
+	      indentString = makeIndentString($3) \n\
+	      replace_range(s, nosp, indentString)\n\
+	      return (length(indentString)-(nosp-s))\n\
+	    }\n\
+	  }\n\
+	}\n\
+	# indentActualLine              \n\
+\n\
+	# returns the line containing position $1 in the file/window\n\
+	define  getActualLine {\n\
+	  startOfLinePos = search("^", $1, "regex", "backward")\n\
+	  if (startOfLinePos == -1)\n\
+	  startOfLinePos = 0\n\
+	  endOfLinePos = search("$", $1, "regex")\n\
+	  if (endOfLinePos == -1)\n\
+	  endOfLinePos = $text_length\n\
+	  line = get_range(startOfLinePos, endOfLinePos) \n\
+	  return line\n\
+	}\n\
+\n\
+	define  getActualLineFromPos {\n\
+	  startOfLinePos = $1\n\
+	  if ( startOfLinePos < 0 )\n\
+	  startOfLinePos = 0\n\
+	  endOfLinePos = search("$", $1, "regex")\n\
+	  if (endOfLinePos == -1)\n\
+	  endOfLinePos = $text_length\n\
+	  line = get_range(startOfLinePos, endOfLinePos) \n\
+	  return line\n\
+	}\n\
+\n\
+	# isClause returns 1 if the string starting from position $1 and finishing in the given line\n\
+	# starts with substring "variant"\n\
+	define isClause { \n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "variant|encode|with"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+\n\
+	###################################################################\n\
+	# isModuleOrControl returns 1 if the string starting from position $1 and finishing in the given line\n\
+	# starts with substring "module" or "control"\n\
+	define isModuleOrControl { \n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "^module>"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	# isObjid returns 1 if the string starting from position $1 \n\
+	# and finishing in the given line\n\
+	# starts with substring "objid"\n\
+	define isObjid { \n\
+	  return get_range($1, $1+5)=="objid"\n\
+	}\n\
+	###################################################################\n\
+	# isAlphanum returns 1 if the string starting from position $1 \n\
+	# and finishing in the given line\n\
+	# starts with an alphanum string\n\
+	define isAlphanum { \n\
+	  a = get_character( $1 )\n\
+	  if( search_string( a,"\\\\w",0,"regex") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	#isAlt returns 1 if the string starting from position $1 beginning with substring "alt"\n\
+	define isAlt {\n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "^(alt|altstep)[\\s]+"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+\n\
+	###################################################################\n\
+	#isVarInOutInoutOrType returns 1 if the string starting from position \n\
+	#$1 beginning with substring "var" or "in" or "inout or "type"\n\
+	define isVarInOutInoutOrType {\n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "^(var|in|out|inout|type)>"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	#isAssignment returns 1 if the string starting from position \n\
+	#$1 beginning with substring "var" or "in" or "inout or "type"\n\
+	define isAssignment {\n\
+	  line = getActualLineFromPos($1)\n\
+	  if ( search_string(line,"^:=",0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+\n\
+	###################################################################\n\
+	#isLabel returns 1 if the string starting from position $1 beginning with substring "label"\n\
+	define isLabel {\n\
+	  line = getActualLineFromPos($1)\n\
+	  #debug_ttcn3("labelled line:" line )\n\
+	  searchFor = "^(label)>"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	#isLabel returns 1 if the string starting from position\n\
+	#$1 beginning with substring "label"\n\
+	define isToOrSender {\n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "^(to|sender)>"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	#isImport returns 1 if the string starting from position\n\
+	#$1 beginning with substring "import"\n\
+	define isImport {\n\
+	  line = getActualLineFromPos($1)\n\
+	  searchFor = "^(import)>"\n\
+	  if ( search_string(line, searchFor,0, "regex","forward") == 0 ) return 1\n\
+	  else return 0\n\
+	}\n\
+	###################################################################\n\
+	# decreaseIndentation decrements the indent value $1 by $em_tab_dist or $tab_dist until 0 is reached\n\
+	define decreaseIndentation {\n\
+	  ind = $1\n\
+	  ind -=defaultIndent("default")\n\
+	  if ( ind >= 0 ) return ind\n\
+	  else return 0\n\
+	}\n\
+\n\
+\n\
+	###################################################################\n\
+	# indents the selected block\n\
+	# called from  Window background menu> indent selected\n\
+	###################################################################\n\
+	define indentSelected_ttcn3 {\n\
+	  #t_print("indentSelected_ttcn3 started:" $selection_start " " $selection_end )\n\
+	  #indentBlock_ttcn3( $selection_start, $selection_end, 1 )\n\
+	  indentBlock_ttcn3( beginningOfLine($selection_start), endOfLine( $selection_end ), 1 )\n\
+	}\n\
+\n\
+	###################################################################\n\
+	# Indents the actual line and the previous x lines.\n\
+	# Called by ProgramSmallIndentMacros>NewLine Macro\n\
+	###################################################################\n\
+\n\
+	define smartIndentLine_ttcn3 {\n\
+	  #debug_ttcn3("smartIndentLine called")\n\
+	  # search the beginning of the previous line:\n\
+	  template_tag = "(template[ \\\\t\\\\n]+\\\\w+[ \\\\t\\\\n]+\\\\w+[ \\\\t\\\\n]*(\\\\([,\\\\n\\\\s\\\\w]*\\\\)){0,1}[ \\\\t\\\\n]*:=)"\n\
+	  const_tag = "(const[ \\\\t\\\\n]+\\\\w+[ \\\\t\\\\n]+\\\\w+[ \\\\t\\\\n]*(\\\\[[0-9]*\\\\]){0,1}[ \\\\t\\\\n]*:=[ \\\\t\\\\n]*\\\\{)"\n\
+	  searchString="^[ \\\\t]*(" template_tag "|" const_tag "|(((type[ \\\\t\\\\n]+(record|set|union))|signature|function|testcase|group|external|import|modulepar|control|module)>))"\n\
+	  startOfSearchPos = search( searchString, $cursor, "regex", "backward")  \n\
+	  if (startOfSearchPos == -1)\n\
+	  startOfSearchPos = 0\n\
+	  replace_range( $cursor,getFirstNonSpace($cursor,endOfLine($cursor) ),"")\n\
+	  retval = indentBlock_ttcn3(startOfSearchPos, endOfLine($cursor), 0 )\n\
+	  return retval\n\
+	  #return -1    \n\
+	} \n\
+	# indentLine_ttcn3\n\
+\n\
+	###################################################################\n\
+	# indents the block \n\
+	# $1: block start\n\
+	# $2: block end\n\
+	# $3: 1: WARNING required, all lines should be indented \n\
+	#     0: WARNING not ordered, only the last line should be inserted\n\
+	# called from  Window background menu> indent selected\n\
+	#    and from  smartIndentLIne_ttcn3\n\
+	###################################################################\n\
+	define indentBlock_ttcn3 {\n\
+	  selectionStart = $1\n\
+	  selectionEnd = $2\n\
+	  actualIndentation = measureIndent( selectionStart )\n\
+	  pos = selectionStart\n\
+	  altFlag = 0 # notification for the first { :this will be an []-{\n\
+        	      # next line shall be indented\n\
+        	      # after its peer an extra dedentation shall apply\n\
+	  curlyBCounter = 0\n\
+	  bracketCounter =0\n\
+	  moduleFlag = 0 # after string "module" it should be set 1, after 1st { should be set back to 0\n\
+	  objidFlag = 0\n\
+	  varFlag = 0\n\
+	  forceLineBreak = 0 # 1:forces NL after "{"\n\
+	  qMFlag = 0 # quotation mark Flag to avoid evaluation e.g "{"\n\
+	  isFirstLine = 1 # first line indentation should be suppress\n\
+	  importFlag = 0\n\
+	  notSmartIndented = $3\n\
+	  #pos= beginningOfLine(pos)\n\
+	  #startOfLastLine = beginningOfLine(selectionEnd)\n\
+	  forceIndent = $3\n\
+	  #debug_ttcn3( "start at line: first char " get_character(pos) " at pos " pos)\n\
+	  ### BEGINNING OF THE LINE ####\n\
+	  while( pos < selectionEnd ) {\n\
+	    startOfLastLine = beginningOfLine(selectionEnd)\n\
+	    if( startOfLastLine == pos ) #last line starts\n\
+	    {\n\
+	      forceIndent = 1\n\
+	      #debug_ttcn3("last line processing from " pos)\n\
+	    }\n\
+	    else\n\
+	    {\n\
+	      if( get_character(pos)=="\\n" )\n\
+	      {\n\
+        	pos++\n\
+        	continue\n\
+	      }\n\
+	    }\n\
+	    selectionEnd +=  indentActualLine(pos,selectionEnd, actualIndentation,forceIndent)\n\
+	    pos = getFirstNonSpace( pos, selectionEnd)\n\
+	    prevlastpos = pos\n\
+	    lastpos = pos\n\
+	    c = get_character( pos ) \n\
+	    if( c=="\\\\" )  pos+=2 #escape char \n\
+	    else if( qMFlag ) {\n\
+	      if( c == "\\"" ) #"\n\
+	      qMFlag = !qMFlag\n\
+	      pos++\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	    } \n\
+	    #if qMFlag == 0 case ( when we are not within two quotation mark )\n\
+	    else if(  c=="/" && pos+2<=selectionEnd && get_character(pos+1)=="/" && get_character(pos+2)=="/" ) {\n\
+	      #doc comment\n\
+	      #debug_ttcn3("Three dash (doc comment) found")\n\
+	      d =  indentActualLine(pos,selectionEnd, 0, forceIndent )\n\
+	      selectionEnd += d\n\
+	      pos+=d+2\n\
+	      while( get_character(pos) !="\\n" ) pos++\n\
+	      #debug_ttcn3("pos:" pos)\n\
+	      pos++\n\
+	      continue\n\
+	    }\n\
+	    else if( get_character( pos ) == "{" ) {\n\
+	      #debug_ttcn3("{ found")\n\
+	      brackets[curlyBCounter]= altFlag \n\
+	      curlyBCounter++\n\
+	      if(altFlag == 1) altFlag = 0\n\
+	      if( varFlag ) {\n\
+        	varFlag = 0\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+	      } # multiline var finished\n\
+	      if( moduleFlag && !objidFlag ) moduleFlag = 0\n\
+	      else actualIndentation+=defaultIndent("default")\n\
+	      #debug_ttcn3("after { the actualIndentation:" actualIndentation )\n\
+	      importFlag = 0\n\
+	      pos = cSkipBlankSpace(pos+1, selectionEnd,0)\n\
+	      if( get_character( pos )=="\\n") {\n\
+        	pos++\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+        	isFirstLine = 0\n\
+        	continue # start processing a new line\n\
+	      }\n\
+	      else if( forceLineBreak && pos < selectionEnd ) {\n\
+        	replace_range(pos,pos,"\\n")\n\
+        	selectionEnd++\n\
+        	pos+=2\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+        	isFirstLine = 0\n\
+        	continue  # start processing a new line\n\
+	      } \n\
+	      # else continue processing this line but get out from the head of the while-loop\n\
+	    }\n\
+	    #if the line starts with } :\n\
+	    else if( get_character( pos ) =="}" ) {\n\
+	      #debug_ttcn3( "} reached at pos " pos )\n\
+	      objidFlag = 0\n\
+	      if( ! isFirstLine ) {\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	d=indentActualLine(pos,selectionEnd, actualIndentation, forceIndent)\n\
+        	selectionEnd+=d  \n\
+        	pos+=d\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+	      }\n\
+	      pos = cSkipBlankSpace(pos+1, selectionEnd,0)\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+\n\
+	      curlyBCounter-=1\n\
+	      if( curlyBCounter<0 ) \n\
+        	warning_ttcn3("Number of closing bracket > No of opening bracket at position:" pos "\\n", $3)\n\
+	      else if( brackets[curlyBCounter] == 1 ) {\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	#end of altblock\n\
+	      }\n\
+	      #debug_ttcn3( "} processing at pos " pos )\n\
+	      ch = get_character( pos )\n\
+\n\
+	      if( ch=="," || ch==";") { \n\
+        	pos++\n\
+        	firstNonComment = cSkipBlankSpace(pos, selectionEnd,0)\n\
+        	if( firstNonComment == -1 )  return actualIndentation \n\
+        	#else:\n\
+        	pos = firstNonComment\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+	      }\n\
+	      if( isClause(pos) ){\n\
+        	pos++\n\
+	      }\n\
+	      else if( get_character( pos )=="\\n") {\n\
+        	pos++\n\
+        	isFirstLine = 0\n\
+        	continue # new line\n\
+	      }\n\
+	      else if( forceLineBreak && pos < selectionEnd  ) {\n\
+        	#debug_ttcn3( "NL insertion follows")\n\
+        	replace_range(pos,pos,"\\n")\n\
+        	selectionEnd++\n\
+        	pos+=2\n\
+        	isFirstLine = 0\n\
+        	continue # new line\n\
+	      }\n\
+\n\
+	    }\n\
+	    else if( get_character( pos ) == "[" ) {\n\
+	      actualIndentation +=defaultIndent("default")\n\
+	      pos++\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	      altFlag = 1\n\
+	    }\n\
+	    else if( get_character( pos ) ==")" ) {      \n\
+\n\
+	      bracketCounter--\n\
+	      #temp:if( bracketCounter==0 ) {\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	if(isFirstLine == 0) {\n\
+        	  d=indentActualLine(pos,selectionEnd, actualIndentation,forceIndent)\n\
+        	  selectionEnd+=d \n\
+        	  pos+=d\n\
+        	}\n\
+	      #}\n\
+	      pos++\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	    }\n\
+	    else if( isVarInOutInoutOrType( pos ) && bracketCounter==0) {\n\
+        	#debug_ttcn3("var or in or out found")\n\
+        	varFlag = 1\n\
+        	actualIndentation +=defaultIndent("default")\n\
+        	pos+=3\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+	    }\n\
+	    else if ( get_character(pos) ==";"  ) {\n\
+	      importFlag = 0\n\
+	      if( varFlag) {\n\
+        	varFlag = 0\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+	      } # multiline var finished\n\
+	      if( altFlag ) {\n\
+        	#altblock finished\n\
+        	altFlag = 0\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+	      } # multiline var finished\n\
+	      pos++\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	    }\n\
+	    else if( isLabel( pos ) ) {\n\
+	      #debug_ttcn3("Label found")\n\
+	      d =  indentActualLine(pos,selectionEnd, 0, forceIndent )\n\
+	      selectionEnd += d\n\
+	      pos+=d+5\n\
+	      while( get_character(pos) !="\\n" ) pos++\n\
+	      #debug_ttcn3("pos:" pos)\n\
+	      pos++\n\
+	      continue\n\
+	    }\n\
+	    else if( isImport( pos ) ){\n\
+	      importFlag = 1\n\
+	      pos+= 6\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	    }\n\
+	    else if( isToOrSender( pos ) ) {\n\
+	      #debug_ttcn3("To or sender found")\n\
+	      d=  indentActualLine(pos,selectionEnd, actualIndentation+defaultIndent("default"), forceIndent )\n\
+	      selectionEnd+=d\n\
+	      pos+=d\n\
+	      while( get_character(pos) !="\\n" ) pos++\n\
+	      #debug_ttcn3("pos:" pos)\n\
+	      pos++\n\
+	      continue\n\
+	    }\n\
+	    # if the lines starts with "{" then new line should be forced\n\
+	    else if( isObjid( pos ) ){\n\
+	      #debug_ttcn3("objid found")\n\
+	      objidFlag = 1\n\
+	      pos += 5\n\
+	    }\n\
+	    else if( isModuleOrControl( pos ) ) {\n\
+	      moduleFlag = 1\n\
+	      actualIndentation = 0\n\
+	      d=indentActualLine(pos,selectionEnd, actualIndentation, forceIndent )\n\
+	      selectionEnd+=d   \n\
+	      pos+=d\n\
+	      pos++\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	    }\n\
+	    else if( importFlag == 1){\n\
+	      #normal letter from broken import command\n\
+	      d=indentActualLine(pos,selectionEnd, actualIndentation+defaultIndent("default"), forceIndent )\n\
+	      pos+=d\n\
+	      selectionEnd+=d\n\
+	      prevlastpos = lastpos\n\
+	      lastpos = pos\n\
+	      #debug_ttcn3("import line continued at pos " pos)\n\
+	    }\n\
+\n\
+	    #debug_ttcn3("Line beginning processed, pos: " pos)  \n\
+	    # searches the last nonspace char in the line (or after comments)\n\
+	    firstNonComment = cSkipBlankSpace(pos, selectionEnd,0)\n\
+	    if( firstNonComment == -1 )  return actualIndentation \n\
+	    else pos = firstNonComment\n\
+\n\
+	    #debug_ttcn3(" firstNonComment: "firstNonComment)  \n\
+\n\
+	    ### INSIDE THE LINE ###\n\
+	    # Normal line processing:    \n\
+\n\
+	    #step across nonspace, gather info:\n\
+	    while(pos<selectionEnd) {\n\
+	      #debug_ttcn3("inner while started, actual indentation:" actualIndentation)\n\
+	      c=get_character( pos )     \n\
+	      if( c=="\\\\" ) {  #escape char\n\
+        	pos+=2\n\
+        	lastpos=pos\n\
+        	continue\n\
+	      }\n\
+\n\
+	      if( qMFlag ) {\n\
+        	if( c == "\\"" ) { #"\n\
+        	  qMFlag = !qMFlag\n\
+        	  #debug_ttcn3( "close quotation mark found and qMFlag changed to " qMFlag)\n\
+        	}\n\
+        	pos++\n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos\n\
+        	continue\n\
+	      } \n\
+	      ### if qMFlag == 0 case ( when we are not within a "..." :\n\
+	      else if( isAssignment( pos ) && (varFlag == 0) ) {\n\
+        	#debug_ttcn3(":= found !!!")\n\
+        	varFlag = 1\n\
+        	actualIndentation +=defaultIndent("default")\n\
+        	pos+=2\n\
+        	prevlastpos = lastpos\n\
+        	lastpos = pos\n\
+	      }\n\
+	      else if( isObjid( pos ) ){\n\
+        	#debug_ttcn3("objid found")\n\
+        	objidFlag = 1\n\
+        	pos += 5\n\
+        	prevlastpos=lastpos\n\
+        	lastpos=pos-1\n\
+	      }\n\
+	      else if( isAlphanum(pos) ){\n\
+        	while( isAlphanum(pos) ) pos++\n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos-1\n\
+        	continue\n\
+	      }\n\
+	      else if( c=="\\n") {\n\
+        	#debug_ttcn3("new line at pos " pos ":" c "\\n" )\n\
+        	isFirstLine = 0\n\
+        	#debug_ttcn3( "char after the NL at pos " pos ":" get_character(pos) "." ) \n\
+        	prevchar = get_character( lastpos )\n\
+        	#debug_ttcn3( "lastpos:" lastpos " prevchar:" prevchar )\n\
+        	if( varFlag && prevchar!="," && prevchar!="=") {\n\
+        	  varFlag = 0\n\
+        	  actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	}\n\
+        	pos++\n\
+        	break # start a new line\n\
+        	# eofline block finished\n\
+	      } \n\
+	      else if( c=="/" ) {\n\
+        	p = cSkipBlankSpace( pos,selectionEnd,0 ) #re-written from pos+1 to pos\n\
+        	if ( p== -1 ) break\n\
+        	if ( pos==p ) p++\n\
+        	pos=p\n\
+        	prevlastpos=lastpos\n\
+        	lastpos=pos\n\
+	      } \n\
+	      else if ( c=="}" ) {\n\
+        	#debug_ttcn3( "}1 reached at pos " pos )\n\
+        	objidFlag = 0\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	curlyBCounter-=1\n\
+        	if( curlyBCounter<0 ) \n\
+        	  warning_ttcn3("Number of closing bracket > No of opening bracket at position:" pos "\\n" pos, $3)\n\
+        	else if( brackets[curlyBCounter] == 1 ) {\n\
+        	  actualIndentation = decreaseIndentation(actualIndentation) # belongs to [\n\
+        	  #debug_ttcn3("2.curlyBCounter:"curlyBCounter " after decreaseInd")\n\
+        	}\n\
+        	#debug_ttcn3("}1: actualIndentation:" actualIndentation)\n\
+        	p = cSkipBlankSpace(pos+1,selectionEnd,0 )\n\
+        	if ( p== -1) break\n\
+        	pos=p\n\
+        	ch = get_character( pos )\n\
+        	if( ch=="," || ch==";") {\n\
+        	  prevlastpos = lastpos\n\
+        	  lastpos = pos\n\
+        	  pos++\n\
+        	}\n\
+        	if ( isClause(pos) ) {\n\
+        	  pos++\n\
+        	  prevlastpos = lastpos\n\
+        	  lastpos = pos\n\
+        	  #debug_ttcn3( "4a at pos " pos )\n\
+        	  continue\n\
+        	}\n\
+        	else if( get_character( pos )=="\\n") {\n\
+        	  #pos++ # new line\n\
+        	  #debug_ttcn3("4b:" pos ":" ch )\n\
+        	  continue #will be proccessed in the next loop\n\
+        	  #break # get out to the outer while\n\
+        	}\n\
+        	else if( forceLineBreak && pos < selectionEnd ){ ##  get_character( pos )!="\\n" ) \n\
+        	  #debug_ttcn3("4c:" pos ":" ch )\n\
+        	  replace_range(pos,pos,"\\n")\n\
+        	  selectionEnd++\n\
+        	  pos+=2\n\
+        	  prevlastpos = lastpos\n\
+        	  lastpos = pos\n\
+        	  break\n\
+        	} \n\
+	      }\n\
+	      else if( c == "{" ) {\n\
+        	#debug_ttcn3( "{ in the middle of the line:" pos )\n\
+        	brackets[curlyBCounter]= altFlag\n\
+        	curlyBCounter++\n\
+        	if(altFlag == 1) altFlag = 0\n\
+        	if( varFlag ) {\n\
+        	  varFlag = 0\n\
+        	  actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	} # multiline var finished\n\
+        	if( moduleFlag && !objidFlag  ) { \n\
+                	moduleFlag = 0\n\
+                	#debug_ttcn3("moduleFlag:" moduleFlag " objidFlag:" objidFlag "\\n")\n\
+        	}\n\
+        	else {\n\
+        	  #debug_ttcn3( "objid+{ handled")\n\
+        	  actualIndentation+=defaultIndent("default")\n\
+        	}\n\
+        	#debug_ttcn3("actualIndentation:" actualIndentation)\n\
+        	pos = getFirstNonSpace(pos+1, selectionEnd)\n\
+        	if( get_character( pos )=="\\n") {\n\
+        	  #debug_ttcn3("{4:" pos)       \n\
+        	  pos++  # NL\n\
+        	  break # go to the next line\n\
+        	}\n\
+        	else if( isClause(pos) ) {\n\
+        	  #debug_ttcn3("{3") \n\
+        	  continue    # will be processed in next loop\n\
+        	} else { \n\
+        	  if( forceLineBreak && pos < selectionEnd) {\n\
+        	    #debug_ttcn3("{2")\n\
+        	    replace_range(pos,pos,"\\n")\n\
+        	    selectionEnd++\n\
+        	    pos+=2\n\
+        	    break # go to the next line\n\
+        	  }\n\
+        	  else { \n\
+        	    #debug_ttcn3("{5:" pos ":" get_character(pos))\n\
+        	    continue\n\
+        	  }\n\
+        	}\n\
+	      }\n\
+	      else if ( c == "(" )  {\n\
+        	#temp:if( bracketCounter == 0)\n\
+        	actualIndentation += defaultIndent("default")\n\
+        	bracketCounter++\n\
+        	pos++\n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos\n\
+        	#debug_ttcn3("*( indentation:" actualIndentation " at pos " pos)\n\
+        	continue\n\
+	      }\n\
+	      else if ( c == ")" ) {\n\
+        	bracketCounter--\n\
+        	#if( bracketCounter == 0)\n\
+        	actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	pos++\n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos\n\
+        	#debug_ttcn3("3.) indentation:" actualIndentation " at pos " pos) \n\
+        	continue\n\
+	      }\n\
+	      else if ( c=="\\"") {  #" Quotation mark processing:\n\
+        	qMFlag = !qMFlag\n\
+        	#debug_ttcn3( "open quotation mark found and qMFlag changed to " qMFlag)\n\
+        	pos++\n\
+	      }\n\
+	      else if ( get_character(pos) ==";" ) {\n\
+        	importFlag = 0\n\
+        	if( varFlag ) {\n\
+        	  varFlag = 0\n\
+        	  actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	} # multiline var finished\n\
+        	if( altFlag ) {\n\
+        	  altFlag = 0\n\
+        	  actualIndentation = decreaseIndentation(actualIndentation)\n\
+        	} # altblock finished\n\
+        	pos++\n\
+	      }\n\
+	      else if( c == "#" ) {\n\
+        	# go to the the end of the line:\n\
+        	while( pos<selectionEnd && get_character(pos)!="\\n" ) pos++\n\
+        	pos++ \n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos\n\
+        	break # new line\n\
+	      }\n\
+	      else if ( c!=" "  && c!="\\t"  && pos < selectionEnd ) {\n\
+        	prevlastpos = lastpos\n\
+        	lastpos=pos\n\
+        	#debug_ttcn3("6.)" pos,":" c)\n\
+        	pos++       \n\
+	      }\n\
+	      else {\n\
+        	firstNonComment = cSkipBlankSpace(pos, selectionEnd,0)\n\
+        	if( firstNonComment == -1 )  return actualIndentation \n\
+        	else pos = firstNonComment\n\
+        	#debug_ttcn3("7.)")\n\
+        	continue\n\
+	      }\n\
+	    } # inner while\n\
+\n\
+	    if( pos == -1 ) {\n\
+	      #debug_ttcn3("break found")\n\
+	      break\n\
+	    }\n\
+\n\
+\n\
+	  } # outer while\n\
+	  return actualIndentation\n\
+	} \n\
+	# indentBlock_ttcn3\n\
+\n\
+\n
+nedit.autoWrap: Continuous
+nedit.wrapMargin: 0
+nedit.autoIndent: Auto
+nedit.autoSave: True
+nedit.openInTab: True
+nedit.saveOldVersion: False
+nedit.showMatching: Delimiter
+nedit.matchSyntaxBased: True
+nedit.highlightSyntax: True
+nedit.backlightChars: False
+nedit.searchDialogs: False
+nedit.beepOnSearchWrap: False
+nedit.retainSearchDialogs: False
+nedit.searchWraps: True
+nedit.stickyCaseSenseButton: True
+nedit.repositionDialogs: True
+nedit.autoScroll: False
+nedit.appendLF: True
+nedit.sortOpenPrevMenu: True
+nedit.statisticsLine: False
+nedit.iSearchLine: False
+nedit.sortTabs: False
+nedit.tabBar: True
+nedit.tabBarHideOne: True
+nedit.toolTips: True
+nedit.globalTabNavigate: False
+nedit.lineNumbers: True
+nedit.pathInWindowsMenu: True
+nedit.warnFileMods: True
+nedit.warnRealFileMods: True
+nedit.warnExit: True
+nedit.searchMethod: Literal
+nedit.textRows: 24
+nedit.textCols: 80
+nedit.tabDistance: 8
+nedit.emulateTabs: 2
+nedit.insertTabs: False
+nedit.textFont: -adobe-courier-medium-r-normal--12-*-*-*-*-*-*
+nedit.boldHighlightFont: -adobe-courier-bold-r-normal--12-*-*-*-*-*-*
+nedit.italicHighlightFont: -adobe-courier-medium-o-normal--12-*-*-*-*-*-*
+nedit.boldItalicHighlightFont: -adobe-courier-bold-o-normal--12-*-*-*-*-*-*
+nedit.textFgColor: black
+nedit.textBgColor: rgb:c0/c0/c0
+nedit.selectFgColor: black
+nedit.selectBgColor: orange
+nedit.hiliteFgColor: white
+nedit.hiliteBgColor: red
+nedit.lineNoFgColor: black
+nedit.cursorFgColor: black
+nedit.smartTags: True
+nedit.prefFileRead: True
+nedit.titleFormat: [%s] %f (%S) - %d

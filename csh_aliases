@@ -1,0 +1,2 @@
+alias grep 'grep --color'
+alias ls 'ls -h --color --full-time'
