@@ -1,5 +1,6 @@
 set number
 set ruler
+set laststatus=2
 set autoindent
 set backspace=2
 set tabstop=4
