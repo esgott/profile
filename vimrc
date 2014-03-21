@@ -2,8 +2,9 @@ set number
 set ruler
 set laststatus=2
 set autoindent
-set backspace=2
 set tabstop=4
+set copyindent
+set backspace=2
 set ignorecase
 set smartcase
 set hlsearch
@@ -13,3 +14,5 @@ set mouse=a
 " Press F4 to toggle highlighting on/off, and show current value.
 :noremap <F4> :set hlsearch! hlsearch?<CR>
 syntax on
+:autocmd BufReadPost * :DetectIndent
+:let g:detectindent_preferred_indent = 4
