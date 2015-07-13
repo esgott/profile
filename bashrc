@@ -38,7 +38,4 @@ git_prompt ()
 
 PROMPT_COMMAND='PS1="$HC$FGRN\u@\h $FBLE\w $FRED$(git_prompt) $FWHT`getTime`\n \$ $RS"'
 
-export EDITOR=vim
-export PATH=$HOME/bin:$PATH
-
-source "${REPO_DIR}/aliases"
+source "${REPO_DIR}/common_settings.sh"

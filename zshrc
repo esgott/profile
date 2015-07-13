@@ -81,4 +81,4 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-source $REPO_DIR/aliases
+source $REPO_DIR/common_settings.sh
