@@ -1,3 +1,5 @@
+REPO_DIR=${0:a:h}
+
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
@@ -79,5 +81,4 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-alias dog="pygmentize -g"
-alias delete-branches="git branch | grep -v  master | xargs git branch -D"
+source $REPO_DIR/aliases

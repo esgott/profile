@@ -1,3 +1,5 @@
+REPO_DIR="$(dirname "$0")"
+
 # ANSI color codes
 RS="\[\033[0m\]"    # reset
 HC="\[\033[1m\]"    # hicolor
@@ -38,3 +40,5 @@ PROMPT_COMMAND='PS1="$HC$FGRN\u@\h $FBLE\w $FRED$(git_prompt) $FWHT`getTime`\n \
 
 export EDITOR=vim
 export PATH=$HOME/bin:$PATH
+
+source "${REPO_DIR}/aliases"
