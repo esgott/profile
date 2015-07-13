@@ -1,3 +1,14 @@
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'gmarik/Vundle.vim'
+Plugin 'Townk/vim-autoclose'
+Plugin 'ciaranm/detectindent'
+Plugin 'ntpeters/vim-better-whitespace'
+call vundle#end()
+filetype plugin indent on
+
 set number
 set ruler
 set laststatus=2
