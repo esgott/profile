@@ -7,6 +7,7 @@ Plugin 'Townk/vim-autoclose'
 Plugin 'ciaranm/detectindent'
 Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'bling/vim-airline'
+Plugin 'tomtom/tcomment_vim'
 call vundle#end()
 filetype plugin indent on
 
