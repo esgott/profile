@@ -1,4 +1,5 @@
-REPO_DIR=${0:a:h}
+SCRIPT="$(readlink -f ~/.zshrc)"
+REPO_DIR="$(dirname "${SCRIPT}")"
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh

@@ -1,4 +1,5 @@
-REPO_DIR="$(dirname "$0")"
+SCRIPT_PATH="$(readlink -f ~/.bashrc)"
+REPO_DIR="$(dirname "${SCRIPT_PATH}")"
 
 # ANSI color codes
 RS="\[\033[0m\]"    # reset
