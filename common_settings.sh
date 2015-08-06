@@ -6,6 +6,7 @@ alias egrep='egrep --color=auto'
 alias mg='grep -iInsr'
 alias ls='ls -h --color=auto'
 alias dog="pygmentize -g"
+alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
 
 mga () { mg "$@" *; }
