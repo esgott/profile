@@ -30,3 +30,4 @@ syntax on
 :autocmd BufReadPost * :DetectIndent
 :let g:detectindent_preferred_indent = 4
 let g:airline#extensions#tabline#enabled = 1
+nnoremap gf <c-w>gf
