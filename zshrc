@@ -1,6 +1,6 @@
 READLINK=readlink
 
-if [ "$(uname)" = "Darwin" ]; then
+if [[ "$(uname)" == "Darwin" ]]; then
 	READLINK=greadlink
 	fpath=(/usr/local/share/zsh-completions $fpath)
 fi

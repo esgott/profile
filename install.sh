@@ -3,7 +3,7 @@
 set -eu
 
 READLINK=readlink
-if [ "$(uname)" = "Darwin" ]; then
+if [[ "$(uname)" == "Darwin" ]]; then
     READLINK=greadlink
 fi
 
