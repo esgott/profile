@@ -1,4 +1,9 @@
-SCRIPT="$(readlink -f ~/.zshrc)"
+READLINK=readlink
+if [ "$(uname)" = "Darwin" ]; then
+	READLINK=greadlink
+fi
+
+SCRIPT="$(${READLINK} -f ~/.zshrc)"
 REPO_DIR="$(dirname "${SCRIPT}")"
 
 # Path to your oh-my-zsh installation.

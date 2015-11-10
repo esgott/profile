@@ -2,8 +2,13 @@
 
 set -eu
 
+READLINK=readlink
+if [ "$(uname)" = "Darwin" ]; then
+    READLINK=greadlink
+fi
+
 REPO_DIR="$(dirname "${0}")"
-REPO_DIR_ABSOLUTE="$(readlink -f "${REPO_DIR}")"
+REPO_DIR_ABSOLUTE="$(${READLINK} -f "${REPO_DIR}")"
 VUNDLE_REPO="${HOME}/.vim/bundle/Vundle.vim"
 
 function install_file {
