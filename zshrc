@@ -1,6 +1,8 @@
 READLINK=readlink
+
 if [ "$(uname)" = "Darwin" ]; then
 	READLINK=greadlink
+	fpath=(/usr/local/share/zsh-completions $fpath)
 fi
 
 SCRIPT="$(${READLINK} -f ~/.zshrc)"
