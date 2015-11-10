@@ -1,10 +1,16 @@
 export EDITOR=vim
 
+export LS=ls
+
+if [[ "$(uname)" == "Darwin" ]]; then
+	LS=gls
+fi
+
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias mg='grep -iInsr'
-alias ls='ls -h --color=auto'
+alias ls='${LS} -h --color=auto'
 alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
