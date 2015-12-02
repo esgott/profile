@@ -12,12 +12,14 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias mg='grep -iInsr'
+alias mgu='grep -Insr'
 alias ls='${LS} -h --color=auto'
 alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
 
 mga () { mg "$@" *; }
+mgua () { mgu "$@" *; }
 
 alias upgrade_system='yaourt -Syua'
 
