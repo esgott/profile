@@ -1,4 +1,5 @@
 export EDITOR=vim
+export ANDROID_HOME=~/Android/Sdk
 
 export LS=ls
 
