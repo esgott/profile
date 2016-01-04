@@ -10,6 +10,7 @@ fi
 REPO_DIR="$(dirname "${0}")"
 REPO_DIR_ABSOLUTE="$(${READLINK} -f "${REPO_DIR}")"
 VUNDLE_REPO="${HOME}/.vim/bundle/Vundle.vim"
+BIN_DIR="${HOME}/bin"
 
 function install_file {
     local source="${1}"
@@ -21,6 +22,12 @@ function install_file {
     else
         >&2 echo "Failed to install ${source} to ${destination}, destination exists"
     fi
+}
+
+function download_file {
+    local source="${1}"
+    local destination="${2}"
+    curl -o "${destination}" "${source}"
 }
 
 install_file "${REPO_DIR_ABSOLUTE}/bashrc" "${HOME}/.bashrc"
@@ -41,3 +48,12 @@ else
 fi
 vim +PluginInstall +qall
 echo "vim plugins installed"
+
+DIFF_HIGHLIGHT_DIR="${BIN_DIR}/diff-highlight"
+DIFF_HIGHLIGHT_EXE="${DIFF_HIGHLIGHT_DIR}/diff-highlight"
+mkdir -p "${DIFF_HIGHLIGHT_DIR}"
+echo "bin directory created"
+download_file -o "${DIFF_HIGHLIGHT_EXE}" https://raw.github.com/git/git/master/contrib/diff-highlight/diff-highligh
+chmod -x "${DIFF_HIGHLIGHT_EXE}"
+echo "diff-highlight downloaded"
+
