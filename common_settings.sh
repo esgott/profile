@@ -30,3 +30,6 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 if [ -e ~/bin/tools.sh ]; then
 	. ~/bin/tools.sh
 fi
+if [ -e ~/.platform_specific.sh ]; then
+	. ~/.platform_specific.sh
+fi
