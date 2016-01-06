@@ -18,8 +18,8 @@ alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
 
-mga () { mg "$@" *; }
-mgua () { mgu "$@" *; }
+mga () { mg "$@" ./*; }
+mgua () { mgu "$@" ./*; }
 
 alias upgrade_system='yaourt -Syua'
 
