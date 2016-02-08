@@ -1,10 +1,10 @@
 READLINK=readlink
 
 if [[ "$(uname)" == "Darwin" ]]; then
-	READLINK=greadlink
-	fpath=(/usr/local/share/zsh-completions $fpath)
-	export PYTHONPATH=$(brew --prefix)/lib/python2.7/site-packages
-	export PATH=$PATH:$(brew --prefix)/share/python
+    READLINK=greadlink
+    fpath=(/usr/local/share/zsh-completions $fpath)
+    export PYTHONPATH=$(brew --prefix)/lib/python2.7/site-packages
+    export PATH=$PATH:$(brew --prefix)/share/python
 fi
 
 SCRIPT="$(${READLINK} -f ~/.zshrc)"
