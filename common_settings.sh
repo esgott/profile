@@ -17,6 +17,7 @@ alias ls='${LS} -h --color=auto'
 alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
+alias mvn='mvn-color'
 
 mga () { mg "$@" ./*; }
 mgua () { mgu "$@" ./*; }
