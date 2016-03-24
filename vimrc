@@ -9,6 +9,7 @@ Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'bling/vim-airline'
 Plugin 'tomtom/tcomment_vim'
 Plugin 'scrooloose/nerdtree'
+Plugin 'fatih/vim-go'
 call vundle#end()
 filetype plugin indent on
 
