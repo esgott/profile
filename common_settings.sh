@@ -22,6 +22,16 @@ alias mvn='mvn-color'
 
 mga () { mg "$@" ./*; }
 mgua () { mgu "$@" ./*; }
+mgfa () {
+	local pattern="$1"
+	shift
+	mga --include "*.$pattern" "$@"
+}
+mgufa () {
+	local pattern="$1"
+	shift
+	mgua --include "*.$pattern" "$@"
+}
 
 alias upgrade_system='yaourt -Syua'
 
