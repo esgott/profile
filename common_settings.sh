@@ -19,6 +19,7 @@ alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
 alias mvn='mvn-color'
+alias diff='colordiff -u'
 
 mga () { mg "$@" ./*; }
 mgua () { mgu "$@" ./*; }
