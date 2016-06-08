@@ -63,6 +63,8 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
+bindkey -M vicmd '/' history-incremental-search-backward
+
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 # export MANPATH="/usr/local/man:$MANPATH"
 
