@@ -6,13 +6,14 @@ Plugin 'gmarik/Vundle.vim'
 Plugin 'Townk/vim-autoclose'
 Plugin 'ciaranm/detectindent'
 Plugin 'ntpeters/vim-better-whitespace'
-Plugin 'bling/vim-airline'
 Plugin 'tomtom/tcomment_vim'
 Plugin 'scrooloose/nerdtree'
 Plugin 'jistr/vim-nerdtree-tabs'
 Plugin 'fatih/vim-go'
 Plugin 'uarun/vim-protobuf'
 Plugin 'ctrlpvim/ctrlp.vim'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
 call vundle#end()
 filetype plugin indent on
 
@@ -37,6 +38,8 @@ syntax on
 :autocmd BufReadPost * :DetectIndent
 :let g:detectindent_preferred_indent = 4
 let g:airline#extensions#tabline#enabled = 1
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'solarized'
 nnoremap gf <c-w>gf
 map <C-n> :NERDTreeTabsToggle<CR>
 nnoremap <C-J> <C-W><C-J>

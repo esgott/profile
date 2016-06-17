@@ -15,7 +15,8 @@ export ZSH=$HOME/.oh-my-zsh
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-ZSH_THEME="ys"
+DEFAULT_USER="esgott"
+ZSH_THEME="agnoster"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -92,3 +93,4 @@ bindkey -M vicmd '/' history-incremental-search-backward
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 source $REPO_DIR/common_settings.sh
+source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
