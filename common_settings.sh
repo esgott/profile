@@ -1,10 +1,9 @@
 export EDITOR=vim
 export ANDROID_HOME=~/Android/Sdk
 
-export LS=ls
-
 if [[ "$(uname)" == "Darwin" ]]; then
-	LS=gls
+	PATH="/usr/local/opt/gnu-tar/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+	MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 fi
 
 function join_array { local IFS="$1"; shift; echo "$*"; }
@@ -14,7 +13,7 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias mg='grep -iInsr'
 alias mgu='grep -Insr'
-alias ls='${LS} -h --color=auto'
+alias ls='ls -h --color=auto'
 alias dog="pygmentize -g"
 alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
