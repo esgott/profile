@@ -10,6 +10,7 @@ Plugin 'bling/vim-airline'
 Plugin 'tomtom/tcomment_vim'
 Plugin 'scrooloose/nerdtree'
 Plugin 'fatih/vim-go'
+Plugin 'uarun/vim-protobuf'
 call vundle#end()
 filetype plugin indent on
 
