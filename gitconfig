@@ -11,6 +11,8 @@
 	default = upstream
 [diff]
 	tool = meld
+[merge]
+	tool = meld
 [pager]
 	log = diff-highlight | less
 	show = diff-highlight | less
