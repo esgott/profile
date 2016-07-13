@@ -8,6 +8,8 @@ fi
 
 function join_array { local IFS="$1"; shift; echo "$*"; }
 
+eval `dircolors ~/.dir_colors`
+
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
