@@ -27,7 +27,7 @@ function install_file {
 function download_file {
     local source="${1}"
     local destination="${2}"
-    curl -o "${destination}" "${source}"
+    wget "${source}" "${destination}"
 }
 
 install_file "${REPO_DIR_ABSOLUTE}/bashrc" "${HOME}/.bashrc"
@@ -53,7 +53,7 @@ DIFF_HIGHLIGHT_DIR="${BIN_DIR}/diff-highlight"
 DIFF_HIGHLIGHT_EXE="${DIFF_HIGHLIGHT_DIR}/diff-highlight"
 mkdir -p "${DIFF_HIGHLIGHT_DIR}"
 echo "bin directory created"
-download_file -o "${DIFF_HIGHLIGHT_EXE}" https://raw.github.com/git/git/master/contrib/diff-highlight/diff-highligh
+download_file "https://raw.githubusercontent.com/git/git/master/contrib/diff-highlight/diff-highlight" "${DIFF_HIGHLIGHT_EXE}"
 chmod -x "${DIFF_HIGHLIGHT_EXE}"
 echo "diff-highlight downloaded"
 
