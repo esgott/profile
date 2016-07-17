@@ -27,6 +27,7 @@ function install_file {
 function download_file {
     local source="${1}"
     local destination="${2}"
+    echo "Downloading file from ${source} to ${destination}"
     wget "${source}" "${destination}"
 }
 

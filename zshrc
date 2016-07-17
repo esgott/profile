@@ -93,4 +93,8 @@ bindkey -M vicmd '/' history-incremental-search-backward
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 source $REPO_DIR/common_settings.sh
-source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [[ "$(uname)" == "Darwin" ]]; then
+    source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+else
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
