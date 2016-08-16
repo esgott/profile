@@ -13,6 +13,8 @@
 	tool = meld
 [merge]
 	tool = meld
+[mergetool]
+	keepBackup = false
 [pager]
 	log = diff-highlight | less
 	show = diff-highlight | less
