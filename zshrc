@@ -2,8 +2,7 @@ READLINK=readlink
 
 if [[ "$(uname)" == "Darwin" ]]; then
     READLINK=greadlink
-    BREW_ZSH="/usr/local/Cellar/zsh/5.2"
-    fpath=(/usr/local/share/zsh-completions $BREW_ZSH/share/zsh/functions)
+    fpath=(/usr/local/share/zsh-completions $fpath)
     export PYTHONPATH=$(brew --prefix)/lib/python2.7/site-packages
     export PATH=$PATH:$(brew --prefix)/share/python
 fi
