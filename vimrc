@@ -9,6 +9,7 @@ Plugin 'ntpeters/vim-better-whitespace'
 Plugin 'bling/vim-airline'
 Plugin 'tomtom/tcomment_vim'
 Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
 Plugin 'fatih/vim-go'
 Plugin 'uarun/vim-protobuf'
 call vundle#end()
@@ -36,7 +37,7 @@ syntax on
 :let g:detectindent_preferred_indent = 4
 let g:airline#extensions#tabline#enabled = 1
 nnoremap gf <c-w>gf
-map <C-n> :NERDTreeToggle<CR>
+map <C-n> :NERDTreeTabsToggle<CR>
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
