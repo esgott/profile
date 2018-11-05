@@ -52,9 +52,13 @@ echo "vim plugins installed"
 
 DIFF_HIGHLIGHT_DIR="${BIN_DIR}/diff-highlight"
 DIFF_HIGHLIGHT_EXE="${DIFF_HIGHLIGHT_DIR}/diff-highlight"
+if [[ "$(uname)" == "Darwin" ]]; then
+    DIFF_HIGHLIGHT="/usr/local/share/git-core/contrib/diff-highlight/diff-highlight"
+else
+    DIFF_HIGHLIGHT="/usr/share/doc/git/contrib/diff-highlight/diff-highlight"
+fi
 mkdir -p "${DIFF_HIGHLIGHT_DIR}"
 echo "bin directory created"
-download_file "https://raw.githubusercontent.com/git/git/master/contrib/diff-highlight/diff-highlight" "${DIFF_HIGHLIGHT_EXE}"
-chmod -x "${DIFF_HIGHLIGHT_EXE}"
-echo "diff-highlight downloaded"
+ln -s "${DIFF_HIGHLIGHT}" "${DIFF_HIGHLIGHT_EXE}"
+echo "diff-highlight configured"
 
