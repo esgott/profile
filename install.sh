@@ -59,6 +59,18 @@ else
 fi
 mkdir -p "${DIFF_HIGHLIGHT_DIR}"
 echo "bin directory created"
-ln -s "${DIFF_HIGHLIGHT}" "${DIFF_HIGHLIGHT_EXE}"
+install_file "${DIFF_HIGHLIGHT}" "${DIFF_HIGHLIGHT_EXE}"
 echo "diff-highlight configured"
+
+SBT_VERSIONS=(0.13 1.0)
+for sbt_version in "${SBT_VERSIONS[@]}"; do
+    sbt_dir="${HOME}/.sbt/${sbt_version}"
+    mkdir -p "${sbt_dir}/plugins"
+    for file in "${REPO_DIR_ABSOLUTE}/sbt"/*.sbt; do
+        install_file "${file}" "${sbt_dir}/$(basename -- "${file}")"
+    done
+    for file in "${REPO_DIR_ABSOLUTE}/sbt/plugins"/*.sbt; do
+        install_file "${file}" "${sbt_dir}/plugins/$(basename -- "${file}")"
+    done
+done
 

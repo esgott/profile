@@ -1,5 +1,6 @@
 export EDITOR=vim
 export ANDROID_HOME=~/Android/Sdk
+export SBT_OPTS="-Xmx4G -Xss4M"
 
 if [[ "$(uname)" == "Darwin" ]]; then
 	PATH="/usr/local/opt/gnu-tar/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH"
