@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 export EDITOR=vim
 export ANDROID_HOME=~/Android/Sdk
 export SBT_OPTS="-Xmx4G -Xss4M"
@@ -9,7 +11,7 @@ fi
 
 function join_array { local IFS="$1"; shift; echo "$*"; }
 
-eval `dircolors ~/.dircolors`
+eval "$(dircolors ~/.dircolors)"
 
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'

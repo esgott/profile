@@ -6,4 +6,5 @@ MY_PATHS=(
 	"${BIN_DIR}/diff-highlight"
 )
 
-export PATH=$(join_array : "${MY_PATHS[@]}"):$PATH
+NEW_PATH=$(join_array : "${MY_PATHS[@]}"):$PATH
+export PATH="${NEW_PATH}"
