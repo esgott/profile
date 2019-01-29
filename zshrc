@@ -78,6 +78,8 @@ source $ZSH/oh-my-zsh.sh
 # User configuration
 
 bindkey -M vicmd '/' history-incremental-search-backward
+bindkey -M viins '^R' history-incremental-pattern-search-backward
+bindkey -M viins '^F' history-incremental-pattern-search-forward
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
