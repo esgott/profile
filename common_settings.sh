@@ -50,3 +50,8 @@ fi
 if [ -e ~/.platform_specific.sh ]; then
 	. ~/.platform_specific.sh
 fi
+
+if [[ "$(uname)" == "Darwin" ]]; then
+    export PATH="$HOME/.jenv/bin:$PATH"
+    eval "$(jenv init -)"
+fi
