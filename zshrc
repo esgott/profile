@@ -112,3 +112,5 @@ if [[ "$(uname)" == "Darwin" ]]; then
 else
     source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
+
+setopt no_share_history
