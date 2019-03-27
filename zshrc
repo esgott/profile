@@ -66,7 +66,7 @@ DISABLE_AUTO_TITLE="true"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   brew
-  colored-man
+  colored-man-pages
   git
   mvn
   vi-mode
