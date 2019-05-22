@@ -32,6 +32,7 @@ set background=dark
 set mouse=a
 set splitbelow
 set splitright
+set clipboard=unnamed
 " Press F4 to toggle highlighting on/off, and show current value.
 :noremap <F4> :set hlsearch! hlsearch?<CR>
 syntax on
