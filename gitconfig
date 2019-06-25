@@ -19,6 +19,7 @@
 [mergetool]
 	keepBackup = false
 [pager]
+	branch = false
 	log = perl ~/bin/diff-highlight/diff-highlight | less
 	show = perl ~/bin/diff-highlight/diff-highlight | less
 	diff = perl ~/bin/diff-highlight/diff-highlight | less
