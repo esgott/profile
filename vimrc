@@ -14,6 +14,12 @@ Plugin 'uarun/vim-protobuf'
 Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'jreybert/vimagit'
+Plugin 'tpope/vim-fugitive'
+Plugin 'tpope/vim-rhubarb'
+Plugin 'kien/rainbow_parentheses.vim'
+Plugin 'scrooloose/nerdcommenter'
 call vundle#end()
 filetype plugin indent on
 
@@ -33,11 +39,14 @@ set mouse=a
 set splitbelow
 set splitright
 set clipboard=unnamed
+set updatetime=100
+set signcolumn=yes
+set wildignore+=*/target/*
 " Press F4 to toggle highlighting on/off, and show current value.
-:noremap <F4> :set hlsearch! hlsearch?<CR>
+noremap <F4> :set hlsearch! hlsearch?<CR>
 syntax on
-:autocmd BufReadPost * :DetectIndent
-:let g:detectindent_preferred_indent = 4
+autocmd BufReadPost * :DetectIndent
+let g:detectindent_preferred_indent = 4
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'solarized'
@@ -48,3 +57,9 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
+map qq <Leader>c<Space>j
+
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
