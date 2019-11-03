@@ -26,6 +26,7 @@ alias vim="vim -p"
 alias delete-branches="git branch | grep -v  master | xargs git branch -D"
 alias mvn='mvn-color'
 alias diff='colordiff -u'
+alias mpv='pv --progress --timer --rate --average-rate --bytes'
 
 mga () { mg "$@" ./*; }
 mgua () { mgu "$@" ./*; }
