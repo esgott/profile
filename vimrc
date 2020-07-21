@@ -18,7 +18,6 @@ Plugin 'airblade/vim-gitgutter'
 Plugin 'jreybert/vimagit'
 Plugin 'tpope/vim-fugitive'
 Plugin 'tpope/vim-rhubarb'
-Plugin 'kien/rainbow_parentheses.vim'
 Plugin 'scrooloose/nerdcommenter'
 call vundle#end()
 filetype plugin indent on
@@ -58,8 +57,3 @@ nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
 map qq <Leader>c<Space>j
-
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
