@@ -67,6 +67,7 @@ DISABLE_AUTO_TITLE="true"
 plugins=(
   brew
   colored-man-pages
+  colorize
   git
   mvn
   vi-mode
