@@ -19,6 +19,7 @@ Plugin 'jreybert/vimagit'
 Plugin 'tpope/vim-fugitive'
 Plugin 'tpope/vim-rhubarb'
 Plugin 'scrooloose/nerdcommenter'
+Plugin 'berdandy/ansiesc.vim'
 call vundle#end()
 filetype plugin indent on
 
