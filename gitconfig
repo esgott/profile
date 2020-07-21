@@ -10,6 +10,8 @@
 	upd = !git fetch origin && git rebase origin/master
 [color]
 	ui = auto
+[pull]
+	ff = only
 [push]
 	default = upstream
 [diff]
