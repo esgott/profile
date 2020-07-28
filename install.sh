@@ -81,7 +81,7 @@ echo "-- Installing Oh My Zsh"
 git clone "git@github.com:robbyrussell/oh-my-zsh.git" "${HOME}/.oh-my-zsh"
 
 echo "-- Installing dircolors-solarized"
-DIRCOLORS_DIR="${REPO_DIR}/../dircolors-solarized"
+DIRCOLORS_DIR="${REPO_DIR_ABSOLUTE}/../dircolors-solarized"
 git clone "git@github.com:seebi/dircolors-solarized.git" "${DIRCOLORS_DIR}"
 install_file "${DIRCOLORS_DIR}/dircolors.256dark" "${HOME}/.dircolors"
 
