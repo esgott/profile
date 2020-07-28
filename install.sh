@@ -16,12 +16,11 @@ function install_file {
     local source="${1}"
     local destination="${2}"
 
-    if [ ! -e "${destination}" ]; then
-        ln -s "${source}" "${destination}"
-        echo "${destination} installed"
-    else
-        >&2 echo "Failed to install ${source} to ${destination}, destination exists"
+    if [ -e "${destination}" ]; then
+        mv "${destination}" "${destination}.backup"
     fi
+    ln -s "${source}" "${destination}"
+    echo "${destination} installed"
 }
 
 function download_file {
