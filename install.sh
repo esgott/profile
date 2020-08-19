@@ -51,6 +51,11 @@ fi
 vim +PluginInstall +qall
 echo "Vim plugins installed"
 
+echo "-- Creating tools directory"
+mkdir -p "${BIN_DIR}"
+install_file "${REPO_DIR_ABSOLUTE}/tools_template.sh" "${BIN_DIR}/tools.sh"
+echo "Tools directory created"
+
 echo "-- Install diff-highlight for Git"
 DIFF_HIGHLIGHT_DIR="${BIN_DIR}/diff-highlight"
 DIFF_HIGHLIGHT_EXE="${DIFF_HIGHLIGHT_DIR}/diff-highlight"
@@ -60,7 +65,6 @@ else
     DIFF_HIGHLIGHT="/usr/share/doc/git/contrib/diff-highlight/diff-highlight"
 fi
 mkdir -p "${DIFF_HIGHLIGHT_DIR}"
-echo "bin directory created"
 install_file "${DIFF_HIGHLIGHT}" "${DIFF_HIGHLIGHT_EXE}"
 echo "diff-highlight configured"
 
