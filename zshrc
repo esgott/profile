@@ -117,3 +117,31 @@ else
 fi
 
 setopt no_share_history
+
+prompt_kubectx() {
+  if type kubectl > /dev/null; then
+    local -a ctx
+    ctx="\u2638 $(kubectl config current-context)"
+    case "$ctx" in
+      *-prod|*production*) prompt_segment red yellow  "$ctx" ;;
+      *) prompt_segment green black "$ctx" ;;
+    esac
+  fi
+}
+
+## Main prompt
+build_prompt() {
+  RETVAL=$?
+  prompt_status
+  prompt_virtualenv
+#  prompt_aws
+  prompt_kubectx
+  prompt_context
+  prompt_dir
+  prompt_git
+  prompt_bzr
+  prompt_hg
+  prompt_end
+}
+
+PROMPT='%{%f%b%k%}$(build_prompt) '
