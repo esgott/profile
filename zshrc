@@ -68,6 +68,7 @@ plugins=(
   colored-man-pages
   colorize
   git
+  kubectl
   mvn
   vi-mode
 )
