@@ -53,7 +53,7 @@ echo "Vim plugins installed"
 
 echo "-- Creating tools directory"
 mkdir -p "${BIN_DIR}"
-install_file "${REPO_DIR_ABSOLUTE}/tools_template.sh" "${BIN_DIR}/tools.sh"
+cp "${REPO_DIR_ABSOLUTE}/tools_template.sh" "${BIN_DIR}/tools.sh"
 echo "Tools directory created"
 
 echo "-- Install diff-highlight for Git"
