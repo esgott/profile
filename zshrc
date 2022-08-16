@@ -2,7 +2,7 @@ READLINK=readlink
 
 if [[ "$(uname)" == "Darwin" ]]; then
     READLINK=greadlink
-    fpath=(/usr/local/share/zsh-completions $fpath)
+    fpath=(/opt/homebrew/share/zsh-completions $fpath)
 fi
 
 SCRIPT="$(${READLINK} -f ~/.zshrc)"
@@ -111,7 +111,7 @@ bindkey -M viins '^F' history-incremental-pattern-search-forward
 
 source $REPO_DIR/common_settings.sh
 if [[ "$(uname)" == "Darwin" ]]; then
-    source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    source /opt/homebrew/share/zsh-syntax-highlighting/highlighters
 else
     source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi

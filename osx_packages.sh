@@ -24,7 +24,7 @@ brew install \
 	zsh-completions \
 	zsh-syntax-highlighting
 
-brew cask install \
+brew install --cask \
 	font-fira-code \
 	font-fira-mono \
 	font-fira-mono-for-powerline \

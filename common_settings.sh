@@ -5,8 +5,8 @@ export ANDROID_HOME=~/Android/Sdk
 export SBT_OPTS="-Xmx4G -Xss4M"
 
 if [[ "$(uname)" == "Darwin" ]]; then
-	PATH="/usr/local/opt/gnu-tar/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-	MANPATH="/usr/local/opt/gnu-tar/libexec/gnuman:/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+	PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+	MANPATH="/opt/homebrew/opt/gnu-tar/libexec/gnuman:/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
 fi
 
 function join_array { local IFS="$1"; shift; echo "$*"; }

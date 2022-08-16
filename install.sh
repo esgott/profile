@@ -60,7 +60,7 @@ echo "-- Install diff-highlight for Git"
 DIFF_HIGHLIGHT_DIR="${BIN_DIR}/diff-highlight"
 DIFF_HIGHLIGHT_EXE="${DIFF_HIGHLIGHT_DIR}/diff-highlight"
 if [[ "$(uname)" == "Darwin" ]]; then
-    DIFF_HIGHLIGHT="/usr/local/share/git-core/contrib/diff-highlight/diff-highlight"
+    DIFF_HIGHLIGHT="/opt/homebrew/share/git-core/contrib/diff-highlight/diff-highlight"
 else
     DIFF_HIGHLIGHT="/usr/share/doc/git/contrib/diff-highlight/diff-highlight"
 fi
