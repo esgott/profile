@@ -118,6 +118,7 @@ fi
 
 setopt no_share_history
 
+source <(kubectl completion zsh)
 prompt_kubectx() {
   if type kubectl > /dev/null; then
     local -a ctx
