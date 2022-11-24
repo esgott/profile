@@ -17,6 +17,7 @@ brew install \
 	gnu-sed \
 	gnutls \
 	kubernetes-cli \
+	pygments \
 	sbt \
 	scala \
 	shellcheck \
