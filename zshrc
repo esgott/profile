@@ -2,6 +2,7 @@ READLINK=readlink
 
 if [[ "$(uname)" == "Darwin" ]]; then
     READLINK=greadlink
+    SED=gsed
     fpath=(/opt/homebrew/share/zsh-completions $fpath)
 fi
 
@@ -122,7 +123,7 @@ source <(kubectl completion zsh)
 prompt_kubectx() {
   if type kubectl > /dev/null; then
     local -a ctx
-    ctx="\u2638 $(kubectl config current-context)"
+    ctx="\u2638 $(kubectl config current-context | ${SED} "s|gtw\.coralogix\.\(.*\)\.k8s-rnd\.coralogix\.net|...\1...|")"
     case "$ctx" in
       *-prod|*production*) prompt_segment red yellow  "$ctx" ;;
       *) prompt_segment green black "$ctx" ;;
