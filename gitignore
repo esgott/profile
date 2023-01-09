@@ -1,3 +1,7 @@
 .history
 .java-version
 *.swp
+.vscode
+.metals
+.bloop
+.bsp
