@@ -1,5 +1,6 @@
 READLINK=readlink
 
+SED=sed
 if [[ "$(uname)" == "Darwin" ]]; then
     READLINK=greadlink
     SED=gsed
